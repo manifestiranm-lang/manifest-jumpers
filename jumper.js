@@ -62,7 +62,7 @@
     n_can: ["اختیاری؛ برای پیگیری کنوپی در صورت گم‌شدن یا دیده‌شدن نزد شخص دیگر.", "Optional; helps trace your canopy if it is lost or found with someone else."],
     g_type: ["نوع هواپیما", "Aircraft type"], g_serial: ["شمارهٔ سریال", "Serial no."], g_alt: ["ارتفاع (ft)", "Altitude (ft)"], g_seats: ["نفرات", "People"], g_free: ["ظرفیت خالی", "Free seats"], g_pur: ["نوع لود", "Load type"], g_lic: ["لایسنس", "License"], g_jt: ["نوع پرش", "Jump type"], you: ["شما", "you"],
     names: ["فهرست نفرات", "Jumper list"],
-    wx_t: ["وضعیت جوی", "Weather"], wx_temp: ["دما", "Temperature"], wx_wind: ["باد", "Wind"], wx_gust: ["تندباد", "Gusts"], wx_dir: ["جهت باد", "Direction"], wx_cloud: ["ابر", "Cloud"], wx_vis: ["دید", "Visibility"], wx_note: ["اطلاعات تقریبی است و جای تصمیم مسئول پرواز را نمی‌گیرد", "Approximate; it does not replace the jump operations decision"],
+    wx_t: ["وضعیت جوی", "Weather"], wx_temp: ["دما", "Temperature"], wx_wind: ["باد", "Wind"], wx_gust: ["تندباد", "Gusts"], wx_dir: ["جهت باد", "Direction"], wx_cloud: ["ابر", "Cloud"], wx_vis: ["دید", "Visibility"], wx_hum: ["رطوبت", "Humidity"], wx_dew: ["نقطهٔ شبنم", "Dew point"], wx_pres: ["فشار", "Pressure"], wx_base: ["ارتفاع پایهٔ ابر", "Cloud base"], wx_low: ["ابر پایین", "Low cloud"], wx_mid: ["ابر میانی", "Mid cloud"], wx_high: ["ابر بالا", "High cloud"], wx_feels: ["احساس‌شده", "Feels like"], wx_rain: ["بارش", "Rain"], wx_now: ["اکنون", "Now"], wx_note: ["اطلاعات تقریبی است و جای تصمیم مسئول پرواز را نمی‌گیرد", "Approximate; it does not replace the jump operations decision"],
     sos_text: ["با زدن «ارسال»، موقعیت مکانی شما برای مسئولان Manifest فرستاده می‌شود. اگر مشکلی پیش آمده یا بیرون از محل فرود نشسته‌اید (آف‌لندینگ)، از این موقعیت برای پیدا کردن شما استفاده می‌شود. فقط در شرایط واقعی بزنید.", "When you press Send, your location is sent to the Manifest staff. If something went wrong or you landed away from the drop zone (off-landing), they will use it to find you. Use it only in a real situation."],
     sos_send: ["ارسال موقعیت SOS", "Send SOS location"], sos_done: ["SOS برای مسئولان ارسال شد. در صورت امکان تلفن همراهتان را کنار خود نگه دارید.", "SOS was sent to the staff. Keep your phone with you if possible."], sos_nopos: ["موقعیت مکانی در دسترس نبود؛ لطفاً دسترسی موقعیت را برای مرورگر روشن کنید.", "Location was not available; please allow location access for your browser."], cancel: ["انصراف", "Cancel"], close: ["بستن", "Close"],
     edit: ["ویرایش", "Edit"], review: ["بررسی تغییرات", "Review changes"], rev_h: ["تغییرات شما را تأیید می‌کنید؟", "Do you confirm your changes?"], rev_note: ["بعد از تأیید، تغییرات برای مسئول ارسال می‌شود و پس از اعمال در پرونده به شما خبر داده می‌شود.", "After you confirm, the changes go to the staff and you are notified once they are applied to your record."], confirm_send: ["تأیید و ارسال", "Confirm & send"], edit_sent: ["تغییرات برای مسئول ارسال شد.", "Your changes were sent to the staff."], no_change: ["تغییری ایجاد نکرده‌اید.", "You have not changed anything."],
@@ -76,7 +76,7 @@
     s_acct: ["حساب کاربری", "Account"], s_app: ["دربارهٔ برنامه", "About the app"], s_ver: ["نسخهٔ وب‌اپ", "Web app version"], s_install: ["برای نصب: در مرورگر گزینهٔ «افزودن به صفحهٔ اصلی» را بزنید.", "To install: use “Add to Home screen” in your browser."], s_user: ["نام کاربری", "Username"],
     log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
     rd_h: ["وضعیت مدارک", "Readiness"], rd_left: ["{d} روز مانده", "{d} days left"], rd_exp: ["منقضی شده", "Expired"], rd_none: ["ثبت نشده", "Not set"], rd_rep: ["ریپک رزرو (موعد بعدی)", "Reserve repack (next due)"],
-    dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
+    pickDate: ["انتخاب تاریخ", "Pick a date"], cal_clear: ["پاک کردن", "Clear"], dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
   });
   function tx(k) { var v = TX[k]; return v ? v[L === "fa" ? 0 : 1] : k; }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (_, k) { return o[k] === undefined ? "" : o[k]; }); }
@@ -307,14 +307,15 @@
     return '<div class="ldgrid"><div><span>' + tx("g_type") + "</span><b>" + esc(l.type || "—") + "</b></div><div><span>" + tx("g_serial") + '</span><b class="ltr">' + esc(l.ac || "—") + "</b></div><div><span>" + tx("g_alt") + "</span><b>" + (l.alt ? D(l.alt) + ' <span dir="ltr">ft</span>' : "—") + "</b></div><div><span>" + tx("g_seats") + "</span><b>" + D((l.slots || []).length) + " / " + D(l.cap || 0) + "</b></div><div><span>" + tx("g_free") + "</span><b>" + D(free) + "</b></div><div><span>" + tx("g_pur") + "</span><b>" + esc(l.pur || "—") + "</b></div></div>";
   }
   function loadCard(x) {
-    var l = x.l, mine = isMine(l), key = x.date + "#" + l.n, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
-    var sc = l.st === "Boarding" || l.st === "Ready" || l.st === "Preparation Complete" ? " s-go" : l.st === "Completed" ? " s-ok" : l.st === "Cancelled" || l.st === "Hold" ? " s-bad" : "", pc = l.cap ? Math.min(100, Math.round(slots.length * 100 / l.cap)) : 0;
-    var h = '<div class="card ld cmp' + sc + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="cmp-top"><b class="cmp-n">' + tx("load") + " " + D(l.n) + "</b>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + chipFor(l.st);
+    var l = x.l, mine = isMine(l), key = x.date + "#" + l.n, slots = l.slots || [], cap = l.cap || 0, free = Math.max(0, cap - slots.length);
+    var cls = { Open: "open", Loading: "load", Ready: "ready", "Preparation Complete": "ready", Boarding: "board", Hold: "hold", Completed: "done", Cancelled: "canc" }[l.st] || "open";
+    var showChip = /^(Boarding|Hold|Completed|Cancelled|Ready|Preparation Complete)$/.test(l.st || "");
+    var dots = ""; if (cap && cap <= 24) { for (var i = 0; i < cap; i++) dots += '<i class="' + (i < slots.length ? "f" : "") + '"></i>'; } else dots = '<span class="sbar"><i style="width:' + (cap ? Math.min(100, Math.round(slots.length * 100 / cap)) : 0) + '%"></i></span>';
+    var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><div class="c2-b"><div class="c2-t"><span class="c2-ac ltr">' + esc(l.ac || "—") + '</span><span class="c2-ty">' + esc(l.type || "") + "</span>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + (showChip ? chipFor(l.st) : "");
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
     else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
-    h += '<span class="cmp-go">👥 ' + D(slots.length) + "/" + D(l.cap || 0) + " ›</span></div>";
-    var meta = [esc(l.type || ""), '<span class="ltr">' + esc(l.ac || "") + "</span>", l.alt ? D(l.alt) + ' <span dir="ltr">ft</span>' : "", esc(l.pur || ""), free ? tx("g_free") + " " + D(free) : ""].filter(Boolean);
-    return h + '<div class="cmp-meta">' + meta.join('<i>·</i>') + '</div><div class="seatbar" title="' + pc + '%"><i style="width:' + pc + '%"></i></div></div>';
+    h += '</div><div class="c2-m">' + [l.alt ? '<span dir="ltr">⛰ ' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
+    return h;
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
   function loadModal() {
@@ -348,18 +349,24 @@
     return authed("jumper_wx").catch(function () { return null; }).then(function (p) {
       if (p && p.lat != null && p.lon != null) S.wxPlace = { lat: p.lat, lon: p.lon, name: p.name || "" };
       var w = S.wxPlace || CFG.wx || { lat: 35.6892, lon: 51.389, name: "" };
-      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + w.lat + "&longitude=" + w.lon + "&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,precipitation,weather_code,visibility&wind_speed_unit=kn&timezone=auto";
+      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + w.lat + "&longitude=" + w.lon + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,pressure_msl,wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,precipitation,weather_code,visibility&wind_speed_unit=kn&timezone=auto";
       return fetch(url).then(function (r) { return r.json(); }).then(function (j) { if (j && j.current) { S.wx = j.current; S.wxAt = Date.now(); } });
     }).catch(function () {});
   }
   function weatherCard() {
     var w = S.wxPlace || CFG.wx || { name: "" }, c = S.wx;
     var wc = c ? c.weather_code : 0, wk = wc <= 1 ? "clear" : wc <= 3 ? "cloud" : wc <= 48 ? "fog" : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? "snow" : "rain";
-    var h = '<div class="card wx3 wk-' + wk + '"><div class="wx3-top"><span class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</span><b class="wx3-t" dir="ltr">' + (c ? D(Math.round(c.temperature_2m)) + "°" : "—") + '</b><span class="wx3-d">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span><span class="wx3-p">' + (w.name ? esc(w.name) : "") + (c ? " · " + clockTxt(S.wxAt) : "") + "</span></div>";
+    var h = '<div class="card wx4 wk-' + wk + '"><div class="wx4-top"><span class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</span><div class="wx4-m"><b class="wx4-t" dir="ltr">' + (c ? D(Math.round(c.temperature_2m)) + "°C" : "—") + '</b><span class="wx4-d">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span></div><div class="wx4-p">' + (w.name ? "<b>" + esc(w.name) + "</b>" : "") + "<span>" + (c ? tx("upd") + " " + clockTxt(S.wxAt) : "") + (c && c.apparent_temperature != null ? " · " + tx("wx_feels") + " " + D(Math.round(c.apparent_temperature)) + "°" : "") + "</span></div></div>";
     if (c) {
-      var dir = DIRS[Math.round((c.wind_direction_10m || 0) / 45) % 8][L === "fa" ? 0 : 1];
-      function chip(icn, val, tt) { return '<span class="wx3-c" title="' + esc(tt) + '">' + ic(icn) + '<b dir="ltr">' + val + "</b></span>"; }
-      h += '<div class="wx3-row">' + chip("wind", D(Math.round(c.wind_speed_10m)) + "↗" + D(Math.round(c.wind_gusts_10m)) + " kt", tx("wx_wind") + " / " + tx("wx_gust")) + chip("compass", esc(dir) + " " + D(Math.round(c.wind_direction_10m || 0)) + "°", tx("wx_dir")) + chip("cloud", D(Math.round(c.cloud_cover)) + "%", tx("wx_cloud")) + chip("eye", c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + " km" : "—", tx("wx_vis")) + "</div>";
+      var dir = DIRS[Math.round((c.wind_direction_10m || 0) / 45) % 8][L === "fa" ? 0 : 1], dg = Math.round(c.wind_direction_10m || 0);
+      var base = c.temperature_2m != null && c.dew_point_2m != null ? Math.max(0, Math.round((c.temperature_2m - c.dew_point_2m) * 400 / 100) * 100) : null;
+      function tile(icn, lab, val, cls) { return '<div class="wx4-c ' + (cls || "") + '"><span class="wl">' + ic(icn) + lab + '</span><b dir="ltr">' + val + "</b></div>"; }
+      function pct(v) { return v == null ? "—" : D(Math.round(v)) + "%"; }
+      h += '<div class="wx4-g">' + tile("wind", tx("wx_wind"), D(Math.round(c.wind_speed_10m)) + " kt") + tile("wind", tx("wx_gust"), D(Math.round(c.wind_gusts_10m)) + " kt", "hot") +
+        '<div class="wx4-c"><span class="wl">' + ic("compass") + tx("wx_dir") + '</span><b dir="ltr"><svg class="ico warr" viewBox="0 0 24 24" style="transform:rotate(' + dg + 'deg)"><path d="M12 4v16M6.500 14.500L12 20l5.500-5.500"/></svg> ' + esc(dir) + " " + D(dg) + "°</b></div>" +
+        tile("drop", tx("wx_hum"), pct(c.relative_humidity_2m)) + tile("cloud", tx("wx_cloud"), pct(c.cloud_cover)) + tile("layers", tx("wx_base"), base == null ? "—" : D(base) + " ft") +
+        tile("cloud", tx("wx_low"), pct(c.cloud_cover_low)) + tile("cloud", tx("wx_mid"), pct(c.cloud_cover_mid)) + tile("cloud", tx("wx_high"), pct(c.cloud_cover_high)) +
+        tile("eye", tx("wx_vis"), c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + " km" : "—") + tile("gauge", tx("wx_pres"), c.pressure_msl != null ? D(Math.round(c.pressure_msl)) + " hPa" : "—") + tile("rain", tx("wx_rain"), D(c.precipitation || 0) + " mm") + "</div>";
     }
     return h + "</div>";
   }
@@ -545,6 +552,7 @@
 
   var ICN = {
     loads: '<path d="M3 10.500a9 9 0 0 1 18 0c-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0C6 9.300 4.500 9.300 3 10.500z"/><path d="M3 10.500l8 7.500M21 10.500l-8 7.500M12 10.500v7.500"/><circle cx="12" cy="19.800" r="1.700" fill="currentColor"/>',
+    cal: '<rect x="3.500" y="5" width="17" height="15.500" rx="2.500"/><path d="M3.500 10h17M8 3v4M16 3v4"/>', drop: '<path d="M12 3.500s6 6.200 6 10.500a6 6 0 0 1-12 0C6 9.700 12 3.500 12 3.500z"/>', gauge: '<path d="M4 17a8.500 8.500 0 1 1 16 0"/><path d="M12 17l4-5"/>', layers: '<path d="M12 4l9 5-9 5-9-5z"/><path d="M3 14l9 5 9-5"/>', rain: '<path d="M7 15a4 4 0 0 1-.6-8A6 6 0 0 1 18 8.500 3.500 3.500 0 0 1 17 15z"/><path d="M8 18l-1 2M12 18l-1 2M16 18l-1 2"/>',
     gear: '<circle cx="12" cy="12" r="3.200"/><path d="M12 2.500v3M12 18.500v3M2.500 12h3M18.500 12h3M5.300 5.300l2.100 2.100M16.600 16.600l2.100 2.100M5.300 18.700l2.100-2.100M16.600 7.400l2.100-2.100"/>',
     alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2.2 7 2.2 7H3.8S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M4 4.5C3 6 2.7 7 2.6 8M20 4.5c1 1.5 1.3 2.5 1.4 3.5" />',
     msgs: '<path d="M4 4.5h16a1 1 0 0 1 1 1v10.5a1 1 0 0 1-1 1h-9.5L5.5 21v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><circle cx="8.5" cy="10.8" r=".9" fill="currentColor"/><circle cx="12" cy="10.8" r=".9" fill="currentColor"/><circle cx="15.5" cy="10.8" r=".9" fill="currentColor"/>',
@@ -593,6 +601,34 @@
     return h;
   }
   function startEdit(folder) { var vals = {}; EDIT[folder].forEach(function (f) { var v = getVal(f[0]); vals[f[0]] = f[2] === "xl" ? JSON.parse(JSON.stringify(v)) : String(v); }); S.edit = { folder: folder, vals: vals, review: false, err: "" }; render(); window.scrollTo(0, 0); }
+  var GM = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function dateBtn(k, v) { return '<button type="button" class="dd-btn" data-act="cal" data-k="' + k + '"><span class="v' + (v ? "" : " ph") + '">' + (v ? esc(dateTxt(v)) : tx("pickDate")) + '</span><span class="cal-ic">' + ic("cal") + "</span></button>"; }
+  function addYears(n) { var d = todayTehran(); return (+d.slice(0, 4) + n) + d.slice(4); }
+  function calRange(k) { return /Expiry$/.test(k) ? [addYears(-10), addYears(25)] : k === "birthDate" ? [addYears(-100), todayTehran()] : [addYears(-70), todayTehran()]; }
+  function calParts(iso) { var y = +iso.slice(0, 4), m = +iso.slice(5, 7), d = +iso.slice(8, 10); return L === "fa" ? g2j(y, m, d) : [y, m, d]; }
+  function calIso(y, m, d) { if (L === "fa") { var g = j2g(y, m, d); return g[0] + "-" + pad(g[1]) + "-" + pad(g[2]); } return y + "-" + pad(m) + "-" + pad(d); }
+  function jLen(y, m) { if (m <= 6) return 31; if (m <= 11) return 30; var g = j2g(y, 12, 30), b = g2j(g[0], g[1], g[2]); return b[0] === y && b[1] === 12 && b[2] === 30 ? 30 : 29; }
+  function openCal(k) {
+    var r = calRange(k), cur = S.edit.vals[k], t = todayTehran(), base = cur || (k === "birthDate" ? addYears(-25) : t); if (base < r[0]) base = r[0]; if (base > r[1]) base = r[1];
+    var pr = calParts(base); S.cal = { k: k, mode: "days", vy: pr[0], vm: pr[1], min: r[0], max: r[1] }; render();
+  }
+  function calModal() {
+    var c = S.cal; if (!c) return ""; var fa = L === "fa", MN = fa ? JM : GM, cur = S.edit && S.edit.vals[c.k], t = todayTehran(), rtl = fa;
+    var y0 = calParts(c.min)[0], y1 = calParts(c.max)[0], h = '<div class="modal" data-act="calclose"><div class="sheet calsheet">';
+    if (c.mode === "days") {
+      var len = fa ? jLen(c.vy, c.vm) : new Date(Date.UTC(c.vy, c.vm, 0)).getUTCDate(), dow = new Date(calIso(c.vy, c.vm, 1) + "T00:00:00Z").getUTCDay(), lead = fa ? (dow + 1) % 7 : dow;
+      h += '<div class="cal-head"><button type="button" class="cal-nav" data-act="calnav" data-n="-1">' + (rtl ? "›" : "‹") + '</button><button type="button" class="cal-title" data-act="calym">' + MN[c.vm - 1] + " " + D(c.vy) + ' ▾</button><button type="button" class="cal-nav" data-act="calnav" data-n="1">' + (rtl ? "‹" : "›") + "</button></div>";
+      h += '<div class="cal-grid wk">' + (fa ? ["ش", "ی", "د", "س", "چ", "پ", "ج"] : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]).map(function (w) { return "<span>" + w + "</span>"; }).join("") + '</div><div class="cal-grid">';
+      for (var i = 0; i < lead; i++) h += "<span></span>";
+      for (var d = 1; d <= len; d++) { var iso = calIso(c.vy, c.vm, d), dis = iso < c.min || iso > c.max; h += '<button type="button" data-act="calday" data-iso="' + iso + '" class="' + (dis ? "dis" : "") + (iso === cur ? " sel" : "") + (iso === t ? " today" : "") + '"' + (dis ? " disabled" : "") + ">" + D(d) + "</button>"; }
+      h += "</div>";
+    } else {
+      h += '<div class="cal-head"><button type="button" class="cal-title" data-act="calym">' + MN[c.vm - 1] + " " + D(c.vy) + ' ▴</button></div><div class="cal-ym"><div class="months">' + MN.map(function (n, i) { return '<button type="button" data-act="calm" data-m="' + (i + 1) + '" class="' + (i + 1 === c.vm ? "sel" : "") + '">' + n + "</button>"; }).join("") + '</div><div class="years">';
+      for (var y = y0; y <= y1; y++) h += '<button type="button" data-act="caly" data-y="' + y + '" class="' + (y === c.vy ? "sel" : "") + '">' + D(y) + "</button>";
+      h += "</div></div>";
+    }
+    return h + '<div class="cal-foot"><button type="button" data-act="calclr">' + tx("cal_clear") + '</button><button type="button" data-act="caltoday"' + (t < c.min || t > c.max ? " disabled" : "") + ">" + tx("today") + "</button></div></div></div>";
+  }
   function dpHtml(k, v) {
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""), j = m ? g2j(+m[1], +m[2], +m[3]) : [0, 0, 0], ty = g2j(+todayTehran().slice(0, 4), +todayTehran().slice(5, 7), +todayTehran().slice(8, 10))[0];
     function sel(part, lab, from, to, cur, nameFn) { var o = '<option value="">' + lab + "</option>"; for (var i = from; i <= to; i++) o += '<option value="' + i + '"' + (i === cur ? " selected" : "") + ">" + esc(nameFn ? nameFn(i) : D(i)) + "</option>"; return '<select class="dps" data-dp="' + k + '" data-part="' + part + '">' + o + "</select>"; }
@@ -617,7 +653,7 @@
       }
       var inp;
       if (f[2] === "select") inp = '<select data-ed="' + k + '">' + optHtml(f[3], v) + "</select>";
-      else if (f[2] === "date" && L === "fa") inp = dpHtml(k, v);
+      else if (f[2] === "date") inp = dateBtn(k, v);
       else inp = '<input data-ed="' + k + '" type="' + (f[2] === "date" ? "date" : "text") + '" class="' + (f[4] === "ltr" || f[2] !== "text" ? "ltr" : "") + '"' + (f[2] === "num" ? ' inputmode="decimal"' : f[2] === "tel" ? ' inputmode="tel"' : f[2] === "email" ? ' inputmode="email" autocapitalize="off"' : "") + ' value="' + esc(f[2] === "num" || f[2] === "tel" ? D(v) : v) + '">';
       h += '<label class="fld"><span>' + lab + "</span>" + inp + "</label>";
       if (k === "bloodType" && String(v || "") !== String(getVal("bloodType") || "") && v) h += '<div class="card bloodf"><b>' + tx("blood_file") + '</b><div class="muted">' + tx("blood_hint") + '</div><label class="btn sm">' + tx("blood_pick") + '<input type="file" hidden data-bf="1" accept="image/jpeg,image/png,image/webp,application/pdf"></label> <span class="muted bfname">' + (ed.bf ? esc(ed.bf.name) : "") + "</span></div>";
@@ -722,10 +758,19 @@
     items.forEach(function (it) { var dl = it[1] ? daysUntil(it[1]) : null, cls = dl === null ? "na" : dl < 0 ? "bad" : dl <= 30 ? "warn" : "ok", txt = dl === null ? tx("rd_none") : dl < 0 ? tx("rd_exp") : fmt(tx("rd_left"), { d: dl }); h += '<div class="rd ' + cls + '"><i></i><span class="grow"><b>' + tx(it[0]) + '</b><small>' + (it[1] ? dateTxt(it[1]) : "") + "</small></span><em>" + txt + "</em></div>"; });
     return h + "</div>";
   }
-  function modalHtml() { return bellModal() + loadModal() + sosModal() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
+  function modalHtml() { return calModal() + bellModal() + loadModal() + sosModal() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
 
   function refreshLog() { return authed("jumper_logbook").then(function (d) { var n = JSON.stringify(d || []); if (n !== S.logSig) { S.logSig = n; S.log = d || []; return true; } return false; }).catch(function () { return false; }); }
   function handleAct(a, t, ev) {
+    if (a === "cal") { openCal(t.dataset.k); return true; }
+    if (a === "calclose") { if (ev.target === t) { S.cal = null; render(); } return true; }
+    if (a === "calnav") { var m2 = S.cal.vm + +t.dataset.n, y2 = S.cal.vy; if (m2 > 12) { m2 = 1; y2++; } if (m2 < 1) { m2 = 12; y2--; } S.cal.vy = y2; S.cal.vm = m2; render(); return true; }
+    if (a === "calym") { S.cal.mode = S.cal.mode === "days" ? "ym" : "days"; render(); var sy = document.querySelector(".years .sel"); if (sy) sy.scrollIntoView({ block: "center" }); return true; }
+    if (a === "calm") { S.cal.vm = +t.dataset.m; S.cal.mode = "days"; render(); return true; }
+    if (a === "caly") { S.cal.vy = +t.dataset.y; render(); var sy2 = document.querySelector(".years .sel"); if (sy2) sy2.scrollIntoView({ block: "center" }); return true; }
+    if (a === "calday") { S.edit.vals[S.cal.k] = t.dataset.iso; S.cal = null; render(); return true; }
+    if (a === "calclr") { S.edit.vals[S.cal.k] = ""; S.cal = null; render(); return true; }
+    if (a === "caltoday") { S.edit.vals[S.cal.k] = todayTehran(); S.cal = null; render(); return true; }
     if (a === "bell") { S.bell = true; S.notes.forEach(function (n) { n.read = true; }); saveNotes(); render(); return true; }
     if (a === "closebell") { if (ev.target === t || t.tagName === "BUTTON") { S.bell = false; render(); } return true; }
     if (a === "clearnotes") { S.notes = []; saveNotes(); render(); return true; }
@@ -773,12 +818,12 @@
     show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
   }
   var BAR = "";
-  var APPV = "13";
+  var APPV = "14";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
-    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + langSwitch() + '<button class="iconbtn bellbtn" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button><button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + '</button></div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
+    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + (forced ? langSwitch() : '<span class="grow"></span>') + '<button class="iconbtn bellbtn" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
       (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
   }
   var NOFIX = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION)$/;
