@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a100d">
+<title>Manifest</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="slides" id="slides" aria-hidden="true"></div>
+  <div class="lang" role="group" aria-label="Language"><button type="button" data-l="fa">فارسی</button><button type="button" data-l="en">English</button></div>
+  <div class="hero-in"><img src="logo.png" alt=""><div><h1 id="title"></h1><p id="tag"></p></div></div>
+</header>
+<main class="wrap">
+  <p style="margin:0 0 10px"><a href="./" style="color:#f28c28;font-weight:700;text-decoration:none">← ورود / Sign in</a></p>
+  <div class="note-card" id="intro"></div>
+  <form id="form" novalidate autocomplete="off">
+    <div class="hp"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+    <div id="fields" class="fx"></div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="submit" id="send" type="submit"></button>
+  </form>
+  <div class="done" id="done" style="display:none"></div>
+</main>
+<div id="scrim" class="scrim" hidden></div>
+<div id="pop" class="pop" hidden></div>
+<script src="config.js"></script>
+<script src="models.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){var box=document.getElementById("slides"),n=10,els=[],cur=0;for(var i=1;i<=n;i++){var e=document.createElement("i");e.style.backgroundImage='url("hero/p'+i+'.webp")';box.appendChild(e);els.push(e)}
+els[0].className="on";setInterval(function(){els[cur].className="";cur=(cur+1)%n;els[cur].className="on"},3000);
+for(var j=1;j<n;j++){(new Image()).src="hero/p"+(j+1)+".webp"}})();
+</script>
+</body>
+</html>
