@@ -10,7 +10,7 @@
   function loadSess() { try { var v = localStorage.getItem("mj_session") || sessionStorage.getItem("mj_session"); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function saveSess(sess, remember) { try { localStorage.removeItem("mj_session"); sessionStorage.removeItem("mj_session"); (remember ? localStorage : sessionStorage).setItem("mj_session", JSON.stringify(sess)); } catch (e) { /* storage blocked */ } }
   var L = lsGet(LSK.lang, "fa") === "en" ? "en" : "fa";
-  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: false, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
+  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|log|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: false, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
 
   /* ---------- texts ---------- */
   var TX = {
@@ -263,7 +263,7 @@
       S.sess = { token: r.token, username: r.username }; if (r.must_change) { S.sess.mustChange = true; S.tempOld = p; S.tab = "me"; S.view = "f_pw"; } saveSess(S.sess, remember); S.busy = false; if (!S.sess.mustChange) S.tab = "loads"; localStorage.removeItem(LSK.prev); render(); refreshAll().then(startPolling);
     }).catch(function (e) { S.busy = false; var c = (e.code || "").replace(/^.*?(bad_login|locked|pending|net).*$/, "$1"); S.err = tx(["bad_login", "locked", "pending", "net"].indexOf(c) >= 0 ? c : "fail"); render(); });
   }
-  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; S.anim = true; render(); window.scrollTo(0, 0); }
+  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; if (t === "log") refreshLog().then(function () { if (S.tab === "log") render(); }); S.anim = true; render(); window.scrollTo(0, 0); }
   function sendMsg(body, attach) {
     return authed("jumper_send", { p_body: body, p_attach: attach || null }).then(function () { return refreshMsgs(); }).then(function () { render(); });
   }
@@ -311,10 +311,10 @@
     var cls = { Open: "open", Loading: "load", Ready: "ready", "Preparation Complete": "ready", Boarding: "board", Hold: "hold", Completed: "done", Cancelled: "canc" }[l.st] || "open";
     var showChip = /^(Boarding|Hold|Completed|Cancelled|Ready|Preparation Complete)$/.test(l.st || "");
     var dots = ""; if (cap && cap <= 24) { for (var i = 0; i < cap; i++) dots += '<i class="' + (i < slots.length ? "f" : "") + '"></i>'; } else dots = '<span class="sbar"><i style="width:' + (cap ? Math.min(100, Math.round(slots.length * 100 / cap)) : 0) + '%"></i></span>';
-    var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><div class="c2-b"><div class="c2-t"><span class="c2-ac ltr">' + esc(l.ac || "—") + '</span><span class="c2-ty">' + esc(l.type || "") + "</span>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + (showChip ? chipFor(l.st) : "");
+    var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><span class="c2-st">' + esc((TX.st[l.st] || [l.st, l.st])[L === "fa" ? 0 : 1]) + '</span><div class="c2-b"><div class="c2-t"><span class="c2-ty">' + esc(l.type || l.ac || "—") + "</span>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + "";
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
     else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
-    h += '</div><div class="c2-m">' + [l.alt ? '<span dir="ltr">⛰ ' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
+    h += '</div><div class="c2-m">' + [l.alt ? '<span dir="ltr">' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
     return h;
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
@@ -364,9 +364,8 @@
       function pct(v) { return v == null ? "—" : D(Math.round(v)) + "%"; }
       h += '<div class="wx4-g">' + tile("wind", tx("wx_wind"), D(Math.round(c.wind_speed_10m)) + " kt") + tile("wind", tx("wx_gust"), D(Math.round(c.wind_gusts_10m)) + " kt", "hot") +
         '<div class="wx4-c"><span class="wl">' + ic("compass") + tx("wx_dir") + '</span><b dir="ltr"><svg class="ico warr" viewBox="0 0 24 24" style="transform:rotate(' + dg + 'deg)"><path d="M12 4v16M6.500 14.500L12 20l5.500-5.500"/></svg> ' + esc(dir) + " " + D(dg) + "°</b></div>" +
-        tile("drop", tx("wx_hum"), pct(c.relative_humidity_2m)) + tile("cloud", tx("wx_cloud"), pct(c.cloud_cover)) + tile("layers", tx("wx_base"), base == null ? "—" : D(base) + " ft") +
-        tile("cloud", tx("wx_low"), pct(c.cloud_cover_low)) + tile("cloud", tx("wx_mid"), pct(c.cloud_cover_mid)) + tile("cloud", tx("wx_high"), pct(c.cloud_cover_high)) +
-        tile("eye", tx("wx_vis"), c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + " km" : "—") + tile("gauge", tx("wx_pres"), c.pressure_msl != null ? D(Math.round(c.pressure_msl)) + " hPa" : "—") + tile("rain", tx("wx_rain"), D(c.precipitation || 0) + " mm") + "</div>";
+        "</div><div class=\"wx4-g g4\">" + tile("drop", tx("wx_hum"), pct(c.relative_humidity_2m)) + tile("cloud", tx("wx_cloud"), pct(c.cloud_cover)) + tile("layers", tx("wx_base"), base == null ? "—" : D(base) + " ft") +
+        tile("eye", tx("wx_vis"), c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + " km" : "—") + "</div>";
     }
     return h + "</div>";
   }
@@ -394,6 +393,7 @@
     else h += '<div class="notelist">' + S.notes.map(function (n) { return '<div class="note"><div class="ni">' + n.icon + '</div><div class="grow">' + esc(noteText(n)) + '<div class="muted">' + dateTxt(new Date(n.at).toISOString().slice(0, 10)) + " " + clockTxt(n.at) + "</div></div></div>"; }).join("") + "</div>";
     return h + '<div class="rowbtns">' + (S.notes.length ? '<button class="btn sm" data-act="clearnotes">' + tx("clear") + "</button>" : "") + '<button class="btn pri sm" data-act="closebell">' + tx("close") + "</button></div></div></div>";
   }
+  function viewLogTab() { return '<div class="backrow"><b class="ftitle">' + tx("f_log") + "</b></div>" + logBody(); }
   function viewSettings() {
     var bgOn = lsGet("mj_bg", true), np = typeof Notification === "undefined" ? "" : Notification.permission;
     var h = '<div class="h2">' + tx("s_lang") + '</div><div class="card setrow">' + langSwitch() + "</div>";
@@ -553,6 +553,7 @@
   var ICN = {
     loads: '<path d="M3 10.500a9 9 0 0 1 18 0c-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0C6 9.300 4.500 9.300 3 10.500z"/><path d="M3 10.500l8 7.500M21 10.500l-8 7.500M12 10.500v7.500"/><circle cx="12" cy="19.800" r="1.700" fill="currentColor"/>',
     cal: '<rect x="3.500" y="5" width="17" height="15.500" rx="2.500"/><path d="M3.500 10h17M8 3v4M16 3v4"/>', drop: '<path d="M12 3.500s6 6.200 6 10.500a6 6 0 0 1-12 0C6 9.700 12 3.500 12 3.500z"/>', gauge: '<path d="M4 17a8.500 8.500 0 1 1 16 0"/><path d="M12 17l4-5"/>', layers: '<path d="M12 4l9 5-9 5-9-5z"/><path d="M3 14l9 5 9-5"/>', rain: '<path d="M7 15a4 4 0 0 1-.6-8A6 6 0 0 1 18 8.500 3.500 3.500 0 0 1 17 15z"/><path d="M8 18l-1 2M12 18l-1 2M16 18l-1 2"/>',
+    book: '<path d="M5 4.500A1.500 1.500 0 0 1 6.500 3H19v16H6.500A1.500 1.500 0 0 0 5 20.500z"/><path d="M5 20.500A1.500 1.500 0 0 0 6.500 22H19v-3M9 8h6M9 12h6"/>',
     gear: '<circle cx="12" cy="12" r="3.200"/><path d="M12 2.500v3M12 18.500v3M2.500 12h3M18.500 12h3M5.300 5.300l2.100 2.100M16.600 16.600l2.100 2.100M5.300 18.700l2.100-2.100M16.600 7.400l2.100-2.100"/>',
     alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2.2 7 2.2 7H3.8S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M4 4.5C3 6 2.7 7 2.6 8M20 4.5c1 1.5 1.3 2.5 1.4 3.5" />',
     msgs: '<path d="M4 4.5h16a1 1 0 0 1 1 1v10.5a1 1 0 0 1-1 1h-9.5L5.5 21v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><circle cx="8.5" cy="10.8" r=".9" fill="currentColor"/><circle cx="12" cy="10.8" r=".9" fill="currentColor"/><circle cx="15.5" cy="10.8" r=".9" fill="currentColor"/>',
@@ -570,7 +571,7 @@
     send: '<path d="M4 12l16-8-6 16-3-6.500z"/>'
   };
   function ic(n, c) { return '<svg class="ico ' + (c || "") + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICN[n] || "") + "</svg>"; }
-  var FOLDERS = [["f_profile", "f_profile", "var(--orange)"], ["f_cred", "f_cred", "var(--olive)"], ["f_rig", "f_rig", "var(--sky)"], ["f_med", "f_med", "var(--coral)"], ["f_emg", "f_emg", "var(--amber)"], ["f_docs", "f_docs", "var(--teal)"], ["f_log", "f_log", "var(--sky)"], ["f_pw", "f_pw", "var(--violet)"]];
+  var FOLDERS = [["f_profile", "f_profile", "var(--orange)"], ["f_cred", "f_cred", "var(--olive)"], ["f_rig", "f_rig", "var(--sky)"], ["f_med", "f_med", "var(--coral)"], ["f_emg", "f_emg", "var(--amber)"], ["f_docs", "f_docs", "var(--teal)"]];
 
   /* ---------- editing (jumper edits, confirms, staff applies) ---------- */
   var SNAKE = { phone: "phone", email: "email", heightCm: "height_cm", weightKg: "weight_kg", organization: "organization", licenseType: "license_type", licenseNumber: "license_number", membershipExpiry: "membership_expiry", firstJumpDate: "first_jump_date", rigOwnership: "rig_ownership", rigType: "rig_type", mainModel: "main_model", mainSize: "main_size", reserveRepackDate: "reserve_repack_date", emergencyPhone: "emergency_phone", emergencyRelation: "emergency_relation" };
@@ -818,13 +819,13 @@
     show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
   }
   var BAR = "";
-  var APPV = "14";
+  var APPV = "15";
   function viewShell() {
-    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
+    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
     return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + (forced ? langSwitch() : '<span class="grow"></span>') + '<button class="iconbtn bellbtn" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
-      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
+      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
   }
   var NOFIX = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION)$/;
   function fixDigits(root) {
