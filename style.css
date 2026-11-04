@@ -182,3 +182,25 @@ html[dir=ltr] .dd-btn .v.dt { text-align: left; }
 /* Persepolis photos stay softly behind the whole page too */
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,13,.86), rgba(10,16,13,.94)), url("hero/p8.webp") center / cover; }
 body { background: transparent; }
+
+/* ===== v17 motion ===== */
+html { background-color: #0a100d; }
+.hero { background: linear-gradient(120deg, #0a100d, #1a2a1d, #2a1a0a, #0a100d); background-size: 300% 300%; animation: heroflow 14s ease-in-out infinite; }
+@keyframes heroflow { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.hero .brand { background-size: 200% 100%; animation: shine 5s linear infinite; background-image: linear-gradient(90deg, #fff 0%, #f6c07a 35%, #fff 70%, #f6c07a 100%); }
+@keyframes shine { to { background-position: -200% 0; } }
+.hero h1 { animation: rise .7s .25s both; } .hero p { animation: rise .7s .4s both; }
+.lang { animation: popIn .6s .3s both; } .tologin { animation: rise .6s .1s both; }
+.rv { opacity: 0; transform: translateY(26px) scale(.985); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.25,1); }
+.rv.in { opacity: 1; transform: none; }
+.sec h2 .ic { animation: floaty 4.5s ease-in-out infinite; }
+.sec:nth-of-type(even) h2 .ic { animation-delay: -2s; }
+.f { transition: transform .2s; } .f:focus-within { transform: translateX(-3px); } html[dir=ltr] .f:focus-within { transform: translateX(3px); }
+.seg button, .chip { transition: background .2s, color .2s, transform .15s, box-shadow .2s; } .seg button:active, .chip:active { transform: scale(.94); }
+.seg button.on { animation: popIn .3s both; }
+.submit::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%); transform: translateX(-120%); animation: sweep 3.6s ease-in-out infinite; pointer-events: none; }
+@keyframes sweep { 60%, 100% { transform: translateX(120%); } }
+.note-card::before { content: ""; position: absolute; }
+.fe.on { animation: shake .35s; }
+body::before { animation: bgdrift 40s ease-in-out infinite alternate; }
+@keyframes bgdrift { from { transform: scale(1.02); } to { transform: scale(1.12) translateY(-12px); } }

@@ -10,7 +10,7 @@
   function loadSess() { try { var v = localStorage.getItem("mj_session") || sessionStorage.getItem("mj_session"); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function saveSess(sess, remember) { try { localStorage.removeItem("mj_session"); sessionStorage.removeItem("mj_session"); (remember ? localStorage : sessionStorage).setItem("mj_session", JSON.stringify(sess)); } catch (e) { /* storage blocked */ } }
   var L = lsGet(LSK.lang, "fa") === "en" ? "en" : "fa";
-  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|log|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: false, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
+  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|log|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: true, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
 
   /* ---------- texts ---------- */
   var TX = {
@@ -318,16 +318,17 @@
     return h;
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
+  function noCam(v) { return String(v === null || v === undefined ? "" : v).replace(/[\u{1F4F7}\u{1F4F8}\u{1F4F9}\u{1F3A5}\u{1F3A6}\u{1F4FD}\uFE0F]/gu, "").replace(/\s+/g, " ").trim(); }
+  function licNo(v) { v = noCam(v); if (!v) return "—"; v = v.replace(/^\(?\s*[A-Za-z]{3,}\)?[\s:\-–]+/, "").replace(/^\(?\s*[A-Za-z]{3,}\)?\s+(?=[A-Za-z]-?\d)/, ""); return v || "—"; }
   function loadModal() {
     var x = S.modal && findLoad(S.modal); if (!x) return "";
     var l = x.l, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
-    var h = '<div class="modal" data-act="closemodal"><div class="sheet paperwrap"><div class="paper"><div class="pp-band"><button class="pp-x" data-act="closemodal">✕</button><b class="pp-t">' + tx("load") + " " + D(l.n) + '</b><span class="pp-d">' + esc(dateTxt(x.date)) + '</span><span class="pp-d ltr">' + esc(x.date) + "</span></div>";
-    h += '<div class="pp-chips"><div><small>' + tx("p_ac") + '</small><b class="ltr">' + esc((l.ac || "—") + (l.type ? " — " + l.type : "")) + "</b></div><div><small>" + tx("p_pur") + "</small><b>" + esc(l.pur || "—") + "</b></div><div><small>" + tx("p_cap") + "</small><b>" + D(l.cap || 0) + '</b></div><div class="' + (free ? "warn" : "okc") + '"><small>' + tx("p_empty") + "</small><b>" + D(free) + "</b></div></div>";
+    var h = '<div class="modal" data-act="closemodal"><div class="sheet paperwrap"><div class="paper"><div class="pp-band"><button class="pp-x" data-act="closemodal">✕</button><b class="pp-t">' + tx("load") + " " + D(l.n) + "</b></div>";
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<div class="pp-time"><span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span> " + tx("leaves") + "</div>";
-    h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("g_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("g_alt") + "</span></div>";
+    h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("g_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("log_alt") + "</span></div>";
     h += slots.length ? slots.map(function (s2, i) {
       var nm = L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa), me = S.me && s2.u === S.me.uid;
-      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(nm || "") + (me ? " ★" : "") + "</span><span>" + esc(D(s2.lic || "—")) + "</span><span>" + esc(s2.jt || "—") + "</span><span>" + esc(s2.d || "") + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
+      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + (me ? " ★" : "") + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(noCam(s2.jt) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
     }).join("") : '<div class="pp-none">' + tx("none_on") + "</div>";
     return h + "</div></div></div></div>";
   }
@@ -819,12 +820,14 @@
     show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
   }
   var BAR = "";
-  var APPV = "15";
+  var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
+  var APPV = "17";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
-    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + (forced ? langSwitch() : '<span class="grow"></span>') + '<button class="iconbtn bellbtn" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
+    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + '</b><span class="topdate">' + topDate() + "</span>" + (forced ? langSwitch() : "") + '<button class="iconbtn bellbtn' + (nA ? " has" : "") + '" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
       (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
   }
   var NOFIX = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION)$/;

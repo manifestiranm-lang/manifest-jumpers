@@ -474,3 +474,33 @@ body { background: transparent; }
 .wx4-c .wl { font-size: 9.5px; } .wx4-c .wl .ico { width: 11px; height: 11px; }
 .wx4-c b { font-size: 12px; }
 @media (max-width: 340px) { .wx4-g.g4 { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== v17 ===== */
+html { background-color: #0a100d; }
+body { min-height: 100dvh; }
+.topdate { flex: 1; text-align: center; font-size: 12.5px; color: #cfe0d6; white-space: nowrap; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); margin: 0 4px; }
+.top b { flex: 0 0 auto; }
+@media (max-width: 350px) { .topdate { font-size: 11px; padding: 3px 6px; } }
+/* load sheet: one line per jumper */
+.pp-r { grid-template-columns: .4fr 2fr 1fr 1fr 1.2fr .8fr; font-size: 11px; }
+.pp-r span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; overflow-wrap: normal; }
+.pp-t { font-size: 22px; }
+/* motion */
+.bellbtn.has .ico { transform-origin: 50% 10%; animation: ringbell 2.6s ease-in-out infinite; }
+.wx4 .wxi { animation: floaty 4s ease-in-out infinite; }
+.c2.st-board { animation: glowp 2.4s ease-in-out infinite; }
+@keyframes glowp { 0%,100% { box-shadow: 0 0 0 0 rgba(111,207,122,.0); } 50% { box-shadow: 0 0 16px 2px rgba(111,207,122,.35); } }
+.page.enter .c2 { animation: slideup .45s cubic-bezier(.2,.8,.25,1) both; }
+.page.enter .c2-n { animation: popin .5s .12s cubic-bezier(.2,.9,.3,1.4) both; }
+.page.enter .c2-s .dots i { animation: popin .35s both; }
+.page.enter .c2-s .dots i:nth-child(1) { animation-delay: .15s } .page.enter .c2-s .dots i:nth-child(2) { animation-delay: .18s } .page.enter .c2-s .dots i:nth-child(3) { animation-delay: .21s } .page.enter .c2-s .dots i:nth-child(4) { animation-delay: .24s } .page.enter .c2-s .dots i:nth-child(5) { animation-delay: .27s } .page.enter .c2-s .dots i:nth-child(6) { animation-delay: .3s } .page.enter .c2-s .dots i:nth-child(n+7) { animation-delay: .33s }
+.page.enter .wx4-c { animation: popin .4s both; } .page.enter .wx4-c:nth-child(2) { animation-delay: .05s } .page.enter .wx4-c:nth-child(3) { animation-delay: .1s } .page.enter .wx4-c:nth-child(4) { animation-delay: .15s } .page.enter .wx4-c:nth-child(n+5) { animation-delay: .2s }
+.page.enter .rd, .page.enter .lsg > div, .page.enter .lbar { animation: slideup .4s both; } .page.enter .rd:nth-child(3), .page.enter .lsg > div:nth-child(2) { animation-delay: .06s } .page.enter .rd:nth-child(4), .page.enter .lsg > div:nth-child(3) { animation-delay: .12s } .page.enter .rd:nth-child(5), .page.enter .lsg > div:nth-child(4) { animation-delay: .18s }
+.lbar i { transform-origin: left center; } .page.enter .lbar i { animation: growx .8s .2s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes growx { from { transform: scaleX(0); } to { transform: none; } }
+.card, .btn, .folder, .c2 { transition: transform .15s, background .2s, box-shadow .2s; }
+.modal .sheet { animation: sheetup .3s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes sheetup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.login-card { animation: slideup .6s cubic-bezier(.2,.8,.25,1) both; }
+.login-card .logo { animation: floaty 5s ease-in-out infinite; }
+.tabs button.on::after { content: ""; position: absolute; bottom: 2px; width: 18px; height: 3px; border-radius: 2px; background: var(--tc, var(--orange)); animation: growx .3s both; }
