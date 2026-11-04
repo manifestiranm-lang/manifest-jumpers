@@ -814,7 +814,7 @@
     if (!on) { if (BG.el) { BG.el.remove(); BG.el = null; } clearInterval(BG.t); BG.t = 0; return; }
     if (BG.el) return;
     var box = document.createElement("div"); box.id = "bgs"; box.setAttribute("aria-hidden", "true");
-    for (var i = 1; i <= BG.n; i++) { var e = document.createElement("i"); e.setAttribute("data-s", "hero/p" + i + ".webp"); box.appendChild(e); }
+    for (var i = 1; i <= BG.n; i++) { var e = document.createElement("i"); e.setAttribute("data-s", "hero/q" + i + ".webp"); box.appendChild(e); }
     document.body.insertBefore(box, document.body.firstChild); BG.el = box; BG.i = Math.floor(Math.random() * BG.n);
     function show() { var els = box.children, el = els[BG.i]; if (!el.style.backgroundImage) el.style.backgroundImage = 'url("' + el.getAttribute("data-s") + '")'; for (var j = 0; j < els.length; j++) els[j].classList.toggle("on", j === BG.i); var nx = els[(BG.i + 1) % BG.n]; if (!nx.style.backgroundImage) nx.style.backgroundImage = 'url("' + nx.getAttribute("data-s") + '")'; }
     show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
@@ -822,7 +822,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "17";
+  var APPV = "18";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();

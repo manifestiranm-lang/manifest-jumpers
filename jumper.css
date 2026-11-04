@@ -332,7 +332,7 @@ input[type=search]::-webkit-search-cancel-button, input[type=number]::-webkit-in
 #bgs { position: fixed; inset: 0; z-index: -1; background: #0a100d; }
 #bgs i { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.04); }
 #bgs i.on { opacity: 1; animation: bgkb 9s ease-out forwards; }
-#bgs::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,16,13,.80), rgba(10,16,13,.90)); }
+#bgs::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,16,13,.52), rgba(10,16,13,.74)); }
 @keyframes bgkb { from { transform: scale(1.04); } to { transform: scale(1.12); } }
 html, body { background-color: transparent; }
 body { background: transparent; }

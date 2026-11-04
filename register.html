@@ -34,7 +34,7 @@
 <script>
 (function(){var box=document.getElementById("slides"),n=10,els=[],cur=0;for(var i=1;i<=n;i++){var e=document.createElement("i");e.style.backgroundImage='url("hero/p'+i+'.webp")';box.appendChild(e);els.push(e)}
 els[0].className="on";setInterval(function(){els[cur].className="";cur=(cur+1)%n;els[cur].className="on"},3000);
-for(var j=1;j<n;j++){(new Image()).src="hero/p"+(j+1)+".webp"}})();
+for(var j=1;j<n;j++){(new Image()).src="hero/q"+(j+1)+".webp"}})();
 </script>
 <script>
 (function(){if(!("IntersectionObserver" in window))return;var f=document.getElementById("fields");var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.06});

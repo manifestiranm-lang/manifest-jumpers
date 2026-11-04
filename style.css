@@ -180,7 +180,7 @@ html[dir=ltr] .dd-btn .v.dt { text-align: left; }
 .submit { border-radius: 16px; background: linear-gradient(180deg, #f6a04b, #ef7f1d); }
 .hero + .wrap::before { content: none; }
 /* Persepolis photos stay softly behind the whole page too */
-body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,13,.86), rgba(10,16,13,.94)), url("hero/p8.webp") center / cover; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,13,.62), rgba(10,16,13,.82)), url("hero/q8.webp") center / cover; }
 body { background: transparent; }
 
 /* ===== v17 motion ===== */
