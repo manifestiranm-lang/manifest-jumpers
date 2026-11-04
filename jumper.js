@@ -25,7 +25,7 @@
     today: ["امروز", "Today"], upd: ["آخرین به‌روزرسانی", "Last update"], load: ["لود", "Load"], onload: ["شما در این لود هستید", "You are on this load"],
     seats: ["نفر", "people"], names: ["فهرست نفرات", "Manifest list"], none_on: ["هنوز کسی ثبت نشده", "Nobody yet"], leaves: ["تا پرواز", "to takeoff"],
     st: { "Open": ["باز", "Open"], "Loading": ["در حال بارگیری", "Loading"], "Ready": ["آماده", "Ready"], "Preparation Complete": ["آماده‌سازی کامل", "Prep complete"], "Boarding": ["سوارشدن", "Boarding"], "Hold": ["توقف", "On hold"], "Completed": ["انجام‌شده", "Completed"], "Cancelled": ["لغو شد", "Cancelled"] },
-    alerts_none: ["اعلانی ندارید.", "No alerts."], enable_n: ["فعال‌کردن اعلان روی گوشی", "Enable phone notifications"], n_on: ["اعلان‌ها روی این دستگاه فعال است.", "Notifications are on for this device."], clear: ["پاک‌کردن همه", "Clear all"],
+    alerts_none: ["اعلانی ندارید.", "No alerts."], enable_n: ["فعال‌کردن اعلان روی گوشی", "Enable phone notifications"], n_on: ["اعلان‌ها روی این دستگاه فعال است.", "Notifications are on for this device."], clear: ["پاک‌کردن", "Clear"],
     msg_ph: ["پیام خود را بنویسید…", "Write a message…"], send: ["ارسال", "Send"], msg_none: ["هنوز پیامی نیست. هر سؤال یا درخواستی دارید بنویسید.", "No messages yet. Write any question or request."], staff: ["مسئول", "Staff"],
     me_nf: ["اطلاعات شما هنوز به سامانه نرسیده است. کمی بعد دوباره امتحان کنید.", "Your profile has not reached the system yet. Try again shortly."],
     f_profile: ["مشخصات", "Profile"], f_cred: ["مدارک و عضویت", "License & membership"], f_rig: ["تجهیزات", "Equipment"], f_med: ["پزشکی و بیمه", "Medical & insurance"], f_emg: ["تماس اضطراری", "Emergency contact"], f_docs: ["مدارک من", "My documents"],
@@ -76,7 +76,7 @@
     s_acct: ["حساب کاربری", "Account"], s_app: ["دربارهٔ برنامه", "About the app"], s_ver: ["نسخهٔ وب‌اپ", "Web app version"], s_install: ["برای نصب: در مرورگر گزینهٔ «افزودن به صفحهٔ اصلی» را بزنید.", "To install: use “Add to Home screen” in your browser."], s_user: ["نام کاربری", "Username"],
     log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
     rd_h: ["وضعیت مدارک", "Readiness"], rd_left: ["{d} روز مانده", "{d} days left"], rd_exp: ["منقضی شده", "Expired"], rd_none: ["ثبت نشده", "Not set"], rd_rep: ["ریپک رزرو (موعد بعدی)", "Reserve repack (next due)"],
-    pickDate: ["انتخاب تاریخ", "Pick a date"], cal_clear: ["پاک کردن", "Clear"], dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
+    pickDate: ["انتخاب تاریخ", "Pick a date"], cal_clear: ["پاک کردن", "Clear"], p_jt: ["نوع", "Type"], dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
   });
   function tx(k) { var v = TX[k]; return v ? v[L === "fa" ? 0 : 1] : k; }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (_, k) { return o[k] === undefined ? "" : o[k]; }); }
@@ -311,13 +311,17 @@
     var cls = { Open: "open", Loading: "load", Ready: "ready", "Preparation Complete": "ready", Boarding: "board", Hold: "hold", Completed: "done", Cancelled: "canc" }[l.st] || "open";
     var showChip = /^(Boarding|Hold|Completed|Cancelled|Ready|Preparation Complete)$/.test(l.st || "");
     var dots = ""; if (cap && cap <= 24) { for (var i = 0; i < cap; i++) dots += '<i class="' + (i < slots.length ? "f" : "") + '"></i>'; } else dots = '<span class="sbar"><i style="width:' + (cap ? Math.min(100, Math.round(slots.length * 100 / cap)) : 0) + '%"></i></span>';
-    var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><span class="c2-st">' + esc((TX.st[l.st] || [l.st, l.st])[L === "fa" ? 0 : 1]) + '</span><div class="c2-b"><div class="c2-t"><span class="c2-ty">' + esc(l.type || l.ac || "—") + "</span>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + "";
+    var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><span class="c2-st">' + esc((TX.st[l.st] || [l.st, l.st])[L === "fa" ? 0 : 1]) + '</span><div class="c2-b"><div class="c2-t"><span class="c2-ty">' + esc(l.type || l.ac || "—") + "</span>" + (l.type && l.ac ? '<small class="c2-sn ltr">' + esc(l.ac) + "</small>" : "") + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + "";
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
     else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
     h += '</div><div class="c2-m">' + [l.alt ? '<span dir="ltr">' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
     return h;
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
+  function shortName(full) {
+    var w = String(full || "").trim().split(/\s+/); if (w.length < 2) return w[0] || "";
+    return L === "fa" ? w.slice(1).join(" ") : w[0].charAt(0).toUpperCase() + ". " + w.slice(1).join(" ");
+  }
   function noCam(v) { return String(v === null || v === undefined ? "" : v).replace(/[\u{1F4F7}\u{1F4F8}\u{1F4F9}\u{1F3A5}\u{1F3A6}\u{1F4FD}\uFE0F]/gu, "").replace(/\s+/g, " ").trim(); }
   function licNo(v) { v = noCam(v); if (!v) return "—"; v = v.replace(/^\(?\s*[A-Za-z]{3,}\)?[\s:\-–]+/, "").replace(/^\(?\s*[A-Za-z]{3,}\)?\s+(?=[A-Za-z]-?\d)/, ""); return v || "—"; }
   function loadModal() {
@@ -325,10 +329,10 @@
     var l = x.l, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
     var h = '<div class="modal" data-act="closemodal"><div class="sheet paperwrap"><div class="paper"><div class="pp-band"><button class="pp-x" data-act="closemodal">✕</button><b class="pp-t">' + tx("load") + " " + D(l.n) + "</b></div>";
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<div class="pp-time"><span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span> " + tx("leaves") + "</div>";
-    h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("g_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("log_alt") + "</span></div>";
+    h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("p_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("log_alt") + "</span></div>";
     h += slots.length ? slots.map(function (s2, i) {
-      var nm = L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa), me = S.me && s2.u === S.me.uid;
-      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + (me ? " ★" : "") + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(noCam(s2.jt) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
+      var nm = shortName(L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa)), me = S.me && s2.u === S.me.uid;
+      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(noCam(s2.jt) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
     }).join("") : '<div class="pp-none">' + tx("none_on") + "</div>";
     return h + "</div></div></div></div>";
   }
@@ -822,7 +826,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "18";
+  var APPV = "19";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();

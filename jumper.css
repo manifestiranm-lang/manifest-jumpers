@@ -504,3 +504,10 @@ body { min-height: 100dvh; }
 .login-card { animation: slideup .6s cubic-bezier(.2,.8,.25,1) both; }
 .login-card .logo { animation: floaty 5s ease-in-out infinite; }
 .tabs button.on::after { content: ""; position: absolute; bottom: 2px; width: 18px; height: 3px; border-radius: 2px; background: var(--tc, var(--orange)); animation: growx .3s both; }
+
+/* ===== v19 ===== */
+.c2-sn { font-size: 10.5px; color: #b9cbc0; font-weight: 400; letter-spacing: .3px; }
+.rowbtns .btn { white-space: nowrap; width: auto; flex: 0 0 auto; }
+#bgs i { background-size: contain; background-repeat: no-repeat; background-position: center; transform: none; animation: none !important; overflow: hidden; }
+#bgs i::before { content: ""; position: absolute; inset: -40px; z-index: -1; background-image: inherit; background-size: cover; background-position: center; filter: blur(26px) brightness(.8); }
+#bgs i.on { animation: none; }

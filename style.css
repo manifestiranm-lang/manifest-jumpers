@@ -204,3 +204,13 @@ html { background-color: #0a100d; }
 .fe.on { animation: shake .35s; }
 body::before { animation: bgdrift 40s ease-in-out infinite alternate; }
 @keyframes bgdrift { from { transform: scale(1.02); } to { transform: scale(1.12) translateY(-12px); } }
+
+/* ===== v19: whole photo visible, header photo removed ===== */
+.hero { background: linear-gradient(180deg, rgba(10,16,13,.55), rgba(10,16,13,.2)); animation: none; min-height: 210px; box-shadow: none; border-radius: 0; }
+.hero::after { display: none; }
+body::before { display: none; }
+#bgs { position: fixed; inset: 0; z-index: -1; background: #0a100d; }
+#bgs i { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease; background-size: contain; background-repeat: no-repeat; background-position: center; overflow: hidden; }
+#bgs i::before { content: ""; position: absolute; inset: -40px; z-index: -1; background-image: inherit; background-size: cover; background-position: center; filter: blur(26px) brightness(.8); }
+#bgs i.on { opacity: 1; }
+#bgs::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,16,13,.5), rgba(10,16,13,.75)); }

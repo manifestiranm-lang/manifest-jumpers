@@ -11,7 +11,6 @@
 </head>
 <body>
 <header class="hero">
-  <div class="slides" id="slides" aria-hidden="true"></div>
   <div class="lang" role="group" aria-label="Language"><button type="button" data-l="fa">فارسی</button><button type="button" data-l="en">English</button></div>
   <div class="hero-in"><img src="logo.png" alt=""><div class="hero-t"><b class="brand">Manifest</b><h1 id="title"></h1><p id="tag"></p></div></div>
 </header>
@@ -32,9 +31,11 @@
 <script src="models.js"></script>
 <script src="app.js"></script>
 <script>
-(function(){var box=document.getElementById("slides"),n=10,els=[],cur=0;for(var i=1;i<=n;i++){var e=document.createElement("i");e.style.backgroundImage='url("hero/p'+i+'.webp")';box.appendChild(e);els.push(e)}
-els[0].className="on";setInterval(function(){els[cur].className="";cur=(cur+1)%n;els[cur].className="on"},3000);
-for(var j=1;j<n;j++){(new Image()).src="hero/q"+(j+1)+".webp"}})();
+(function(){var n=10,i=Math.floor(Math.random()*n),box=document.createElement("div");box.id="bgs";box.setAttribute("aria-hidden","true");
+for(var k=1;k<=n;k++){var e=document.createElement("i");e.setAttribute("data-s","hero/q"+k+".webp");box.appendChild(e)}
+document.body.insertBefore(box,document.body.firstChild);
+function show(){var els=box.children;[i,(i+1)%n].forEach(function(x){if(!els[x].style.backgroundImage)els[x].style.backgroundImage='url("'+els[x].getAttribute("data-s")+'")'});for(var j=0;j<n;j++)els[j].classList.toggle("on",j===i)}
+show();setInterval(function(){i=(i+1)%n;show()},7000)})();
 </script>
 <script>
 (function(){if(!("IntersectionObserver" in window))return;var f=document.getElementById("fields");var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.06});
