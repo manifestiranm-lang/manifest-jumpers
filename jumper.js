@@ -14,7 +14,7 @@
 
   /* ---------- texts ---------- */
   var TX = {
-    app: ["Manifest", "Manifest"], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], reg_acct: ["ساخت حساب کاربری", "Create an account"], reg_q: ["حساب کاربری ندارید؟", "Don't have an account?"], sos_btn_t: ["درخواست کمک اضطراری", "Emergency help"], sos_sub: ["ارسال موقعیت مکانی برای مسئولان منیفست", "Send your location to Manifest staff"], blood_need: ["برای تغییر گروه خونی، عکس یا PDF آزمایش خون را هم بفرستید.", "To change your blood type, also attach a photo or PDF of the blood test."], blood_file: ["آزمایش خون (عکس یا PDF)", "Blood test (photo or PDF)"], blood_hint: ["برای تغییر گروه خونی لازم است.", "Required to change blood type."], blood_pick: ["انتخاب فایل", "Choose file"], blood_big: ["فایل باید عکس یا PDF و کمتر از ۵ مگابایت باشد.", "File must be a photo or PDF under 5 MB."], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
+    app: ["Manifest", "Manifest"], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], p_slot: ["اسلات", "Slot"], p_name: ["نام", "Name"], p_det: ["جزئیات", "Details"], p_empty: ["اسلات خالی", "Empty slots"], p_cap: ["ظرفیت", "Capacity"], p_ac: ["هواپیما", "Aircraft"], p_pur: ["نوع لود", "Load type"], reg_acct: ["ساخت حساب کاربری", "Create an account"], reg_q: ["حساب کاربری ندارید؟", "Don't have an account?"], sos_btn_t: ["درخواست کمک اضطراری", "Emergency help"], sos_sub: ["ارسال موقعیت مکانی برای مسئولان منیفست", "Send your location to Manifest staff"], blood_need: ["برای تغییر گروه خونی، عکس یا PDF آزمایش خون را هم بفرستید.", "To change your blood type, also attach a photo or PDF of the blood test."], blood_file: ["آزمایش خون (عکس یا PDF)", "Blood test (photo or PDF)"], blood_hint: ["برای تغییر گروه خونی لازم است.", "Required to change blood type."], blood_pick: ["انتخاب فایل", "Choose file"], blood_big: ["فایل باید عکس یا PDF و کمتر از ۵ مگابایت باشد.", "File must be a photo or PDF under 5 MB."], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
     user: ["نام کاربری (کد ملی یا شماره پاسپورت)", "Username (national ID or passport number)"], pass: ["رمز ورود", "Password"],
     login: ["ورود", "Sign in"], reg: ["ثبت‌نام ندارید؟ ثبت‌نام", "No account? Register"], logout: ["خروج", "Sign out"],
     bad_login: ["نام کاربری یا رمز درست نیست.", "Wrong username or password."], locked: ["تلاش‌های زیاد. ۱۵ دقیقه دیگر دوباره امتحان کنید.", "Too many tries. Try again in 15 minutes."],
@@ -299,25 +299,26 @@
   }
   function loadCard(x) {
     var l = x.l, mine = isMine(l), key = x.date + "#" + l.n, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
-    var h = '<div class="card ld' + (mine ? " mine" : "") + '"><div class="row"><div class="grow"><div class="ld-title">' + tx("load") + " " + D(l.n) + "</div></div>" + (mine ? '<span class="chip me">' + tx("onload") + "</span>" : "") + chipFor(l.st) + "</div>";
-    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<div class="row" style="margin-top:8px"><span class="count" data-end="' + l.end + '">' + mmss(remaining(l)) + '</span><span class="muted">' + tx("leaves") + "</span></div>";
-    else if (l.cs === "Hold" && l.rem) h += '<div class="row" style="margin-top:8px"><span class="count">' + mmss(l.rem) + '</span><span class="muted">' + chipFor("Hold") + "</span></div>";
-    h += loadInfoGrid(l, free);
-    h += '<button class="btn sm wide" data-act="openload" data-key="' + esc(key) + '">👥 ' + tx("names") + " (" + D(slots.length) + ")</button></div>";
-    return h;
+    var h = '<div class="card ld cmp' + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="cmp-top"><b class="cmp-n">' + tx("load") + " " + D(l.n) + "</b>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + chipFor(l.st);
+    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
+    else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
+    h += '<span class="cmp-go">👥 ' + D(slots.length) + "/" + D(l.cap || 0) + " ›</span></div>";
+    var meta = [esc(l.type || ""), '<span class="ltr">' + esc(l.ac || "") + "</span>", l.alt ? D(l.alt) + ' <span dir="ltr">ft</span>' : "", esc(l.pur || ""), free ? tx("g_free") + " " + D(free) : ""].filter(Boolean);
+    return h + '<div class="cmp-meta">' + meta.join('<i>·</i>') + "</div></div>";
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
   function loadModal() {
     var x = S.modal && findLoad(S.modal); if (!x) return "";
     var l = x.l, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
-    var h = '<div class="modal" data-act="closemodal"><div class="sheet"><div class="row"><div class="grow"><div class="ld-title">' + tx("load") + " " + D(l.n) + "</div></div>" + chipFor(l.st) + '<button class="iconbtn" data-act="closemodal">✕</button></div>';
-    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<div class="row" style="margin:6px 0"><span class="count" data-end="' + l.end + '">' + mmss(remaining(l)) + '</span><span class="muted">' + tx("leaves") + "</span></div>";
-    h += loadInfoGrid(l, free) + '<div class="h2">' + tx("names") + "</div>";
-    h += slots.length ? '<div class="plist">' + slots.map(function (s, i) {
-      var nm = L === "fa" ? (s.fa || s.en) : (s.en || s.fa), me = S.me && s.u === S.me.uid;
-      return '<div class="pl' + (me ? " me" : "") + '"><div class="pn">' + D(i + 1) + '</div><div class="grow"><b>' + esc(nm || "") + (me ? " · " + tx("you") : "") + '</b><div class="muted">' + tx("g_lic") + ": " + esc(D(s.lic || "—")) + '</div><div class="muted">' + tx("g_jt") + ": " + esc(s.jt || "—") + (s.d ? " · " + esc(s.d) : "") + '</div></div><div class="pa"><span>' + tx("g_alt") + "</span><b>" + (s.alt ? D(s.alt) : "—") + "</b></div></div>";
-    }).join("") + "</div>" : '<p class="muted">' + tx("none_on") + "</p>";
-    return h + "</div></div>";
+    var h = '<div class="modal" data-act="closemodal"><div class="sheet paperwrap"><div class="paper"><div class="pp-band"><button class="pp-x" data-act="closemodal">✕</button><b class="pp-t">' + tx("load") + " " + D(l.n) + '</b><span class="pp-d">' + esc(dateTxt(x.date)) + '</span><span class="pp-d ltr">' + esc(x.date) + "</span></div>";
+    h += '<div class="pp-chips"><div><small>' + tx("p_ac") + '</small><b class="ltr">' + esc((l.ac || "—") + (l.type ? " — " + l.type : "")) + "</b></div><div><small>" + tx("p_pur") + "</small><b>" + esc(l.pur || "—") + "</b></div><div><small>" + tx("p_cap") + "</small><b>" + D(l.cap || 0) + '</b></div><div class="' + (free ? "warn" : "okc") + '"><small>' + tx("p_empty") + "</small><b>" + D(free) + "</b></div></div>";
+    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<div class="pp-time"><span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span> " + tx("leaves") + "</div>";
+    h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("g_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("g_alt") + "</span></div>";
+    h += slots.length ? slots.map(function (s2, i) {
+      var nm = L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa), me = S.me && s2.u === S.me.uid;
+      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(nm || "") + (me ? " ★" : "") + "</span><span>" + esc(D(s2.lic || "—")) + "</span><span>" + esc(s2.jt || "—") + "</span><span>" + esc(s2.d || "") + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
+    }).join("") : '<div class="pp-none">' + tx("none_on") + "</div>";
+    return h + "</div></div></div></div>";
   }
   function viewLoads() {
     var all = loadsFlat(), today = todayTehran(), todays = all.filter(function (x) { return x.date === today; });
@@ -343,13 +344,11 @@
   }
   function weatherCard() {
     var w = S.wxPlace || CFG.wx || { name: "" }, c = S.wx;
-    var h = '<div class="card wx2"><div class="wx2-top"><div class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</div><div class="wx2-t"><b>' + (c ? '<span dir="ltr">' + D(Math.round(c.temperature_2m)) + "°C</span>" : "—") + '</b><span>' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span></div><div class="wx2-place"><b>' + (w.name ? esc(w.name) : tx("wx_t")) + '</b>' + (c ? "<small>" + clockTxt(S.wxAt) + "</small>" : "") + '</div></div>';
+    var h = '<div class="card wx3"><div class="wx3-top"><span class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</span><b class="wx3-t" dir="ltr">' + (c ? D(Math.round(c.temperature_2m)) + "°" : "—") + '</b><span class="wx3-d">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span><span class="wx3-p">' + (w.name ? esc(w.name) : "") + (c ? " · " + clockTxt(S.wxAt) : "") + "</span></div>";
     if (c) {
       var dir = DIRS[Math.round((c.wind_direction_10m || 0) / 45) % 8][L === "fa" ? 0 : 1];
-      function cell(icn, lab, val) { return '<div class="wx2-c"><span class="wx2-i">' + ic(icn) + '</span><b dir="ltr">' + val + '</b><small>' + lab + "</small></div>"; }
-      var kt = ' <span dir="ltr">kt</span>';
-      h += '<div class="wx2-grid">' + cell("wind", tx("wx_wind"), D(Math.round(c.wind_speed_10m)) + kt) + cell("wind", tx("wx_gust"), D(Math.round(c.wind_gusts_10m)) + kt) + cell("compass", tx("wx_dir"), dir + " " + D(Math.round(c.wind_direction_10m || 0)) + "&deg;") + cell("cloud", tx("wx_cloud"), D(Math.round(c.cloud_cover)) + "%") + cell("eye", tx("wx_vis"), c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + ' <span dir="ltr">km</span>' : "—") + "</div>";
-      h += '<div class="muted wx2-note">' + tx("wx_note") + "</div>";
+      function chip(icn, val, tt) { return '<span class="wx3-c" title="' + esc(tt) + '">' + ic(icn) + '<b dir="ltr">' + val + "</b></span>"; }
+      h += '<div class="wx3-row">' + chip("wind", D(Math.round(c.wind_speed_10m)) + "↗" + D(Math.round(c.wind_gusts_10m)) + " kt", tx("wx_wind") + " / " + tx("wx_gust")) + chip("compass", esc(dir) + " " + D(Math.round(c.wind_direction_10m || 0)) + "°", tx("wx_dir")) + chip("cloud", D(Math.round(c.cloud_cover)) + "%", tx("wx_cloud")) + chip("eye", c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + " km" : "—", tx("wx_vis")) + "</div>";
     }
     return h + "</div>";
   }
@@ -525,7 +524,7 @@
   function yn(v) { return v ? tx("yes") : tx("no"); }
 
   var ICN = {
-    loads: '<path d="M3 11a9 9 0 0 1 18 0c-1.5-1.3-3-1.3-4.5 0-1.5-1.3-3-1.3-4.5 0-1.5-1.3-3-1.3-4.5 0C6 9.7 4.5 9.7 3 11z"/><path d="M3 11l7.5 9M21 11l-7.5 9M12 11v9"/><path d="M9.5 20h5"/>',
+    loads: '<path d="M3 10.500a9 9 0 0 1 18 0c-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0C6 9.300 4.500 9.300 3 10.500z"/><path d="M3 10.500l8 7.500M21 10.500l-8 7.500M12 10.500v7.500"/><circle cx="12" cy="19.800" r="1.700" fill="currentColor"/>',
     alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2.2 7 2.2 7H3.8S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M4 4.5C3 6 2.7 7 2.6 8M20 4.5c1 1.5 1.3 2.5 1.4 3.5" />',
     msgs: '<path d="M4 4.5h16a1 1 0 0 1 1 1v10.5a1 1 0 0 1-1 1h-9.5L5.5 21v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><circle cx="8.5" cy="10.8" r=".9" fill="currentColor"/><circle cx="12" cy="10.8" r=".9" fill="currentColor"/><circle cx="15.5" cy="10.8" r=".9" fill="currentColor"/>',
     me: '<path d="M5 13a7 7 0 0 1 14 0v2H5z"/><path d="M5 15v1.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V15"/><path d="M8.5 13h7"/><path d="M12 6V4"/>',
