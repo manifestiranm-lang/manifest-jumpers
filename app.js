@@ -44,7 +44,7 @@ const GMONTHS = ["January", "February", "March", "April", "May", "June", "July",
 
 /* ---------- texts ---------- */
 const LBL = {
-  title: ["ثبت‌نام اسکای دایور", "Skydiver registration"], tag: ["همین‌جا ثبت‌نام کنید؛ بعد از بررسی، حساب شما فعال می‌شود", "Register here; your account is activated after a review"],
+  title: ["ثبت‌نام", "Registration"], tag: ["همین‌جا ثبت‌نام کنید؛ بعد از بررسی، حساب شما فعال می‌شود", "Register here; your account is activated after a review"],
   intro: ["اطلاعات خود را کامل و دقیق وارد کنید. پس از ارسال، مسئول Manifest آن را بررسی می‌کند و در صورت تأیید، حساب شما فعال می‌شود. فیلدهای دارای ستاره لازم هستند.", "Fill in your details completely and accurately. After you send them, the Manifest staff reviews them and, if everything is fine, activates your account. Fields marked with * are required."],
   send: ["ارسال ثبت‌نام", "Send registration"], sending: ["در حال ارسال…", "Sending…"], uploading: ["در حال بارگذاری مدارک…", "Uploading documents…"],
   sec_account: ["حساب کاربری", "Account"], sec_personal: ["اطلاعات شخصی", "Personal details"], sec_emerg: ["تماس اضطراری", "Emergency contact"],
