@@ -14,7 +14,7 @@
 
   /* ---------- texts ---------- */
   var TX = {
-    app: ["Manifest", "Manifest"], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
+    app: ["Manifest", "Manifest"], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], reg_acct: ["ساخت حساب کاربری", "Create an account"], reg_q: ["حساب کاربری ندارید؟", "Don't have an account?"], sos_btn_t: ["درخواست کمک اضطراری", "Emergency help"], sos_sub: ["ارسال موقعیت مکانی برای مسئولان منیفست", "Send your location to Manifest staff"], blood_need: ["برای تغییر گروه خونی، عکس یا PDF آزمایش خون را هم بفرستید.", "To change your blood type, also attach a photo or PDF of the blood test."], blood_file: ["آزمایش خون (عکس یا PDF)", "Blood test (photo or PDF)"], blood_hint: ["برای تغییر گروه خونی لازم است.", "Required to change blood type."], blood_pick: ["انتخاب فایل", "Choose file"], blood_big: ["فایل باید عکس یا PDF و کمتر از ۵ مگابایت باشد.", "File must be a photo or PDF under 5 MB."], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
     user: ["نام کاربری (کد ملی یا شماره پاسپورت)", "Username (national ID or passport number)"], pass: ["رمز ورود", "Password"],
     login: ["ورود", "Sign in"], reg: ["ثبت‌نام ندارید؟ ثبت‌نام", "No account? Register"], logout: ["خروج", "Sign out"],
     bad_login: ["نام کاربری یا رمز درست نیست.", "Wrong username or password."], locked: ["تلاش‌های زیاد. ۱۵ دقیقه دیگر دوباره امتحان کنید.", "Too many tries. Try again in 15 minutes."],
@@ -278,7 +278,7 @@
       '<label class="fld"><span>' + tx("pass") + '</span><input id="lp" class="ltr" type="password" autocomplete="current-password"></label>' +
       '<label class="chk"><input type="checkbox" id="lr" checked> <span>' + tx("remember") + '</span></label>' +
       '<div class="err" role="alert">' + esc(S.err) + '</div><button class="btn pri" type="submit"' + (S.busy ? " disabled" : "") + '>' + tx("login") + '</button>' +
-      '<div class="linkrow"><a href="#" data-act="forgot">' + tx("forgot") + '</a><a href="register.html">' + tx("reg") + '</a></div><div class="linkrow" style="justify-content:center">' + langSwitch() + '</div></form></div>';
+      '<div class="linkrow" style="justify-content:center"><a href="#" data-act="forgot">' + tx("forgot") + '</a></div><div class="regbox"><span>' + tx("reg_q") + '</span><a class="btn regbtn" href="register.html">' + tx("reg_acct") + '</a></div><div class="linkrow" style="justify-content:center">' + langSwitch() + '</div></form></div>';
   }
   function viewForgot() {
     var body;
@@ -343,11 +343,13 @@
   }
   function weatherCard() {
     var w = S.wxPlace || CFG.wx || { name: "" }, c = S.wx;
-    var h = '<div class="card wx"><div class="row"><div class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</div><div class="grow"><b>' + tx("wx_t") + (w.name ? " · " + esc(w.name) : "") + '</b><div class="muted">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</div></div><button class="sosbtn" data-act="sos">🆘 SOS</button></div>';
+    var h = '<div class="card wx2"><div class="wx2-top"><div class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</div><div class="wx2-t"><b>' + (c ? '<span dir="ltr">' + D(Math.round(c.temperature_2m)) + "°C</span>" : "—") + '</b><span>' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span></div><div class="wx2-place"><b>' + (w.name ? esc(w.name) : tx("wx_t")) + '</b>' + (c ? "<small>" + clockTxt(S.wxAt) + "</small>" : "") + '</div></div>';
     if (c) {
       var dir = DIRS[Math.round((c.wind_direction_10m || 0) / 45) % 8][L === "fa" ? 0 : 1];
-      h += '<div class="ldgrid">' + '<div><span>' + tx("wx_temp") + '</span><b>' + D(Math.round(c.temperature_2m)) + ' <span dir="ltr">°C</span>' + '</b></div>' + '<div><span>' + tx("wx_wind") + '</span><b>' + D(Math.round(c.wind_speed_10m)) + ' <span dir="ltr">kt</span>' + '</b></div>' + '<div><span>' + tx("wx_gust") + '</span><b>' + D(Math.round(c.wind_gusts_10m)) + ' <span dir="ltr">kt</span>' + '</b></div>' + '<div><span>' + tx("wx_dir") + '</span><b>' + dir + " " + D(Math.round(c.wind_direction_10m || 0)) + "&deg;" + '</b></div>' + '<div><span>' + tx("wx_cloud") + '</span><b>' + D(Math.round(c.cloud_cover)) + "%" + '</b></div>' + '<div><span>' + tx("wx_vis") + '</span><b>' + (c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + ' <span dir="ltr">km</span>' : "—") + '</b></div>' + '</div>';
-      h += '<div class="muted">' + tx("wx_note") + " · " + clockTxt(S.wxAt) + "</div>";
+      function cell(icn, lab, val) { return '<div class="wx2-c"><span class="wx2-i">' + ic(icn) + '</span><b dir="ltr">' + val + '</b><small>' + lab + "</small></div>"; }
+      var kt = ' <span dir="ltr">kt</span>';
+      h += '<div class="wx2-grid">' + cell("wind", tx("wx_wind"), D(Math.round(c.wind_speed_10m)) + kt) + cell("wind", tx("wx_gust"), D(Math.round(c.wind_gusts_10m)) + kt) + cell("compass", tx("wx_dir"), dir + " " + D(Math.round(c.wind_direction_10m || 0)) + "&deg;") + cell("cloud", tx("wx_cloud"), D(Math.round(c.cloud_cover)) + "%") + cell("eye", tx("wx_vis"), c.visibility != null ? D(Math.round(c.visibility / 100) / 10) + ' <span dir="ltr">km</span>' : "—") + "</div>";
+      h += '<div class="muted wx2-note">' + tx("wx_note") + "</div>";
     }
     return h + "</div>";
   }
@@ -428,7 +430,7 @@
   }
   function viewChatList() {
     var lm = lastOf(S.msgs), nS = unreadStaff();
-    var h = '<div class="h2">' + tx("dm_title") + '</div><div class="clist">';
+    var h = '<button type="button" class="sosrow" data-act="sos"><span class="sosb">SOS</span><span class="grow"><b>' + tx("sos_btn_t") + '</b><small>' + tx("sos_sub") + '</small></span></button><div class="h2">' + tx("dm_title") + '</div><div class="clist">';
     h += '<button type="button" class="crow pin" data-act="openchat" data-p="staff"><span class="av logo"><img src="logo.png" alt=""></span><span class="grow"><b>' + tx("chat_title") + '</b><small>' + esc(prevTxt(lm) || tx("chat_sub")) + '</small></span>' + (nS ? '<span class="cbadge">' + D(nS) + "</span>" : "") + "</button>";
     var by = {}, order = [];
     S.dm.forEach(function (m) { if (!by[m.peer]) { by[m.peer] = []; } by[m.peer].push(m); });
@@ -536,6 +538,7 @@
     f_docs: '<path d="M3.500 7.500a2 2 0 0 1 2-2h4l2 2.200h7a2 2 0 0 1 2 2v7.800a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
     f_log: '<path d="M6 3.500h11a2 2 0 0 1 2 2V20H8a2 2 0 0 1-2-2z"/><path d="M6 18a2 2 0 0 1 2-2h11M10 8h5M10 11.500h5"/>',
     f_pw: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8.500-8.500M16.500 6.500l2.500 2.500M14 9l2 2"/>',
+    wind: '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/>', eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', cloud: '<path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.500 4 4 0 0 1 17 18z"/>', compass: '<circle cx="12" cy="12" r="9"/><path d="M15.500 8.500l-2 5-5 2 2-5z"/>', temp: '<path d="M10 14.500V5a2 2 0 0 1 4 0v9.500a4 4 0 1 1-4 0z"/>', user: '<circle cx="12" cy="8.500" r="3.800"/><path d="M4.500 20.500c.8-4 4-5.800 7.500-5.800s6.700 1.800 7.500 5.800"/>',
     send: '<path d="M4 12l16-8-6 16-3-6.500z"/>'
   };
   function ic(n, c) { return '<svg class="ico ' + (c || "") + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICN[n] || "") + "</svg>"; }
@@ -583,8 +586,9 @@
       if (f[2] === "select") inp = '<select data-ed="' + k + '">' + optHtml(f[3], v) + "</select>";
       else inp = '<input data-ed="' + k + '" type="' + (f[2] === "date" ? "date" : "text") + '" class="' + (f[4] === "ltr" || f[2] !== "text" ? "ltr" : "") + '"' + (f[2] === "num" ? ' inputmode="decimal"' : f[2] === "tel" ? ' inputmode="tel"' : f[2] === "email" ? ' inputmode="email" autocapitalize="off"' : "") + ' value="' + esc(v) + '">';
       h += '<label class="fld"><span>' + lab + "</span>" + inp + "</label>";
+      if (k === "bloodType" && String(v || "") !== String(getVal("bloodType") || "") && v) h += '<div class="card bloodf"><b>' + tx("blood_file") + '</b><div class="muted">' + tx("blood_hint") + '</div><label class="btn sm">' + tx("blood_pick") + '<input type="file" hidden data-bf="1" accept="image/jpeg,image/png,image/webp,application/pdf"></label> <span class="muted bfname">' + (ed.bf ? esc(ed.bf.name) : "") + "</span></div>";
     });
-    return h + '<div class="err" role="alert">' + esc(ed.err) + '</div><div class="row"><button class="btn pri grow" type="submit">' + tx("review") + '</button><button class="btn" type="button" data-act="editcancel">' + tx("cancel") + "</button></div></form>";
+    BAR = '<button class="btn pri grow" type="submit" form="ef">' + tx("review") + '</button><button class="btn" type="button" data-act="editcancel">' + tx("cancel") + "</button>"; return h + '<div class="err" role="alert">' + esc(ed.err) + "</div></form>";
   }
   function norm(f, v) { if (f[2] === "tel" || f[2] === "num" || f[2] === "date") return LAT(v).trim(); return String(v === null || v === undefined ? "" : v).trim(); }
   function collectChanges(folder) {
@@ -611,7 +615,7 @@
   function reviewView() {
     var ed = S.edit, h = '<div class="card mine"><b>' + tx("rev_h") + "</b><p class=\"muted\">" + tx("rev_note") + '</p></div><div class="card"><div class="kv">';
     ed.changes.forEach(function (c) { h += "<div><span>" + tx(c.f[1]) + '</span><span><s class="muted">' + esc(showVal(c.f, c.old)) + "</s><br>" + esc(showVal(c.f, c.nw)) + "</span></div>"; });
-    return h + '</div></div><div class="row"><button class="btn pri grow" data-act="editconfirm"' + (S.busy ? " disabled" : "") + ">" + tx("confirm_send") + '</button><button class="btn" data-act="editback">' + tx("back") + "</button></div>";
+    BAR = '<button class="btn pri grow" data-act="editconfirm"' + (S.busy ? " disabled" : "") + ">" + tx("confirm_send") + '</button><button class="btn" data-act="editback">' + tx("back") + "</button>"; return h + "</div></div>" + (ed.bf ? '<p class="muted">📎 ' + esc(ed.bf.name) + "</p>" : "");
   }
   function folderView(key) {
     var p = prof(), e = ext();
@@ -639,7 +643,7 @@
     if (key === "f_pw") return pwBody();
     if (key === "f_log") return logBody();
     if (S.edit && S.edit.folder === key) return S.edit.review ? reviewView() : editForm(key);
-    return folderView(key) + (EDIT[key] ? '<button class="btn pri wide" data-act="edit" data-f="' + key + '">✏️ ' + tx("edit") + "</button>" : "");
+    return folderView(key);
   }
   function docsBody() {
     var e = ext(), p = prof(), docs = (S.me && S.me.docs) || [];
@@ -661,8 +665,8 @@
   function viewMe() {
     if (!S.me) return '<div class="empty">…</div>';
     if (!S.me.found) return '<div class="empty">' + tx("me_nf") + "</div>";
-    if (S.view) { return '<div class="backrow"><button class="btn sm" data-act="back">← ' + tx("back") + "</button><b>" + tx(S.view) + "</b></div>" + folderBody(S.view); }
-    var h = '<div class="card row">' + (S.photo ? '<img class="avatar" src="' + esc(S.photo) + '" alt="">' : '<div class="avatar">🪂</div>') + '<div class="grow"><div class="ld-title">' + esc(personName()) + '</div><div class="muted ltr">' + esc((prof().code || "")) + " " + esc(D(S.sess.username)) + "</div></div></div>";
+    if (S.view) { var fb = folderBody(S.view); if (!S.edit || S.edit.folder !== S.view) BAR = '<button class="btn" data-act="back">' + (L === "fa" ? "→ " : "← ") + tx("back") + "</button>" + (EDIT[S.view] ? '<button class="btn pri grow" data-act="edit" data-f="' + S.view + '">✏️ ' + tx("edit") + "</button>" : ""); return '<div class="backrow"><b class="ftitle">' + tx(S.view) + "</b></div>" + fb; }
+    var h = '<div class="card row">' + (S.photo ? '<img class="avatar" src="' + esc(S.photo) + '" alt="">' : '<div class="avatar ph">' + ic("user") + "</div>") + '<div class="grow"><div class="ld-title">' + esc(personName()) + '</div><div class="muted ltr">' + esc((prof().code || "")) + " " + esc(D(S.sess.username)) + "</div></div></div>";
     h += '<div class="folders">' + FOLDERS.map(function (f) { return '<button class="folder" style="--c:' + f[2] + '" data-folder="' + f[0] + '"><span class="fi">' + ic(f[1]) + "</span><b>" + tx(f[0]) + "</b></button>"; }).join("") + "</div>";
     return h;
   }
@@ -680,7 +684,9 @@
     if (a === "editconfirm") {
       var ch = S.edit.changes, changes = {}; ch.forEach(function (c) { changes[c.k] = c.nw; });
       S.busy = true; render();
-      sendMsg("", { kind: "edit", folder: S.edit.folder, path: "jumper/" + S.sess.username + "/edit-" + Date.now(), name: "edit", mime: "application/json", changes: changes }).then(function () { S.busy = false; S.edit = null; render(); toast(tx("edit_sent")); }).catch(function () { S.busy = false; render(); toast(tx("fail")); });
+      var pre = Promise.resolve();
+      if (S.edit.bf && ch.some(function (c) { return c.k === "bloodType"; })) { var bf = S.edit.bf, bsafe = bf.name.replace(/[^A-Za-z0-9._-]/g, "_").slice(-60) || "file", bpath = "jumper/" + S.sess.username + "/" + Date.now() + "-bloodTest-" + bsafe; pre = fetch(CFG.url + "/storage/v1/object/registration-docs/" + bpath, { method: "POST", headers: hdr({ "Content-Type": bf.type, "x-upsert": "false" }), body: bf }).then(function (r) { if (!r.ok) throw new Error("up"); return sendMsg("", { kind: "bloodTest", path: bpath, name: bf.name, mime: bf.type, size: bf.size }); }); }
+      pre.then(function () { return sendMsg("", { kind: "edit", folder: S.edit.folder, path: "jumper/" + S.sess.username + "/edit-" + Date.now(), name: "edit", mime: "application/json", changes: changes }); }).then(function () { S.busy = false; S.edit = null; render(); toast(tx("edit_sent")); }).catch(function () { S.busy = false; render(); toast(tx("fail")); });
       return true;
     }
     if (a === "openchat") { openChat(t.dataset.p); return true; }
@@ -698,12 +704,13 @@
     if (a === "sosgo") { sendSos(); return true; }
     return false;
   }
+  var BAR = "";
   function viewShell() {
-    var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "alerts" ? viewAlerts() : S.tab === "msgs" ? viewMsgs() : viewMe();
+    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "alerts" ? viewAlerts() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
-    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + langSwitch() + '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + '</button></div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" +
-      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("alerts", "alerts", tx("t_alerts"), nA, "alerts") + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "me", tx("t_me")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
+    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + langSwitch() + '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + '</button></div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
+      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("alerts", "alerts", tx("t_alerts"), nA, "alerts") + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "user", tx("t_me")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
   }
   function render() {
     document.documentElement.lang = L; document.documentElement.dir = L === "fa" ? "rtl" : "ltr";
@@ -744,12 +751,14 @@
     else if (ev.target.id === "ef") {
       var chs = collectChanges(S.edit.folder);
       if (!chs.length) { S.edit.err = tx("no_change"); return render(); }
+      if (chs.some(function (c) { return c.k === "bloodType"; }) && !S.edit.bf) { S.edit.err = tx("blood_need"); return render(); }
       S.edit.err = ""; S.edit.changes = chs; S.edit.review = true; render(); window.scrollTo(0, 0);
     } else if (ev.target.id === "mf") { var ta = document.getElementById("mt"), v = ta.value.trim(); if (!v) return; ta.value = ""; chatToggle(); chatPost(v).catch(function (e) { ta.value = v; toast(/slow_down/.test(e.code || "") ? tx("fail") : tx("fail")); }); }
   });
   function onEditInput(ev) {
     var i = ev.target; if (!i || !i.getAttribute || !S.edit) return;
-    var k = i.getAttribute("data-ed"); if (k) { S.edit.vals[k] = i.value; return; }
+    if (i.getAttribute("data-bf")) { var bf = i.files && i.files[0]; if (bf && (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(bf.type) || bf.size > 5 * 1024 * 1024)) { i.value = ""; S.edit.bf = null; return toast(tx("blood_big")); } S.edit.bf = bf || null; var bn = document.querySelector(".bfname"); if (bn) bn.textContent = bf ? bf.name : ""; return; }
+    var k = i.getAttribute("data-ed"); if (k) { var was = S.edit.vals[k]; S.edit.vals[k] = i.value; if (k === "bloodType" && ev.type === "change" && was !== i.value) { render(); } return; }
     var xi = i.getAttribute("data-xl"); if (xi !== null && xi !== undefined) { S.edit.vals.extraLicenses[+xi][i.getAttribute("data-xf")] = i.value; }
   }
   document.addEventListener("input", onEditInput);
