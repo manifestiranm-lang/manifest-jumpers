@@ -10,7 +10,7 @@
   function loadSess() { try { var v = localStorage.getItem("mj_session") || sessionStorage.getItem("mj_session"); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function saveSess(sess, remember) { try { localStorage.removeItem("mj_session"); sessionStorage.removeItem("mj_session"); (remember ? localStorage : sessionStorage).setItem("mj_session", JSON.stringify(sess)); } catch (e) { /* storage blocked */ } }
   var L = lsGet(LSK.lang, "fa") === "en" ? "en" : "fa";
-  var S = { sess: loadSess(), tab: lsGet(LSK.tab, "loads"), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: false, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
+  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: false, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
 
   /* ---------- texts ---------- */
   var TX = {
@@ -20,7 +20,7 @@
     bad_login: ["نام کاربری یا رمز درست نیست.", "Wrong username or password."], locked: ["تلاش‌های زیاد. ۱۵ دقیقه دیگر دوباره امتحان کنید.", "Too many tries. Try again in 15 minutes."],
     pending: ["ثبت‌نام شما هنوز تأیید نشده است. بعد از تأیید مسئول می‌توانید وارد شوید.", "Your registration is not approved yet. You can sign in after the staff approves it."],
     net: ["اتصال اینترنت مشکل دارد.", "Network problem."], fill: ["نام کاربری و رمز را وارد کنید.", "Enter username and password."],
-    t_loads: ["لودها", "Loads"], t_alerts: ["اعلان‌ها", "Alerts"], t_msgs: ["پیام‌ها", "Messages"], t_me: ["پروفایل", "Profile"],
+    t_loads: ["لودها", "Loads"], t_alerts: ["اعلان‌ها", "Alerts"], t_set: ["تنظیمات", "Settings"], t_msgs: ["پیام‌ها", "Messages"], t_me: ["پروفایل", "Profile"],
     loads_none: ["فعلاً لودی ثبت نشده است.", "No loads yet."], loads_mine: ["لودهای من", "My loads"], loads_all: ["همهٔ لودها", "All loads"],
     today: ["امروز", "Today"], upd: ["آخرین به‌روزرسانی", "Last update"], load: ["لود", "Load"], onload: ["شما در این لود هستید", "You are on this load"],
     seats: ["نفر", "people"], names: ["فهرست نفرات", "Manifest list"], none_on: ["هنوز کسی ثبت نشده", "Nobody yet"], leaves: ["تا پرواز", "to takeoff"],
@@ -71,6 +71,13 @@
     lic_main: ["لایسنس اصلی", "Main license"], lic_n: ["لایسنس", "License"], mem_h: ["عضویت", "Membership"],
     log_none: ["هنوز پرشی در لاگ‌بوک شما ثبت نشده است.", "No jumps in your logbook yet."], log_total: ["تعداد پرش‌های ثبت‌شده", "Recorded jumps"], log_date: ["تاریخ", "Date"], log_load: ["لود", "Load"], log_ac: ["هواپیما", "Aircraft"], log_type: ["نوع پرش", "Type"], log_alt: ["ارتفاع", "Alt"]
   });
+  Object.assign(TX, {
+    s_lang: ["زبان", "Language"], s_notif: ["اعلان‌ها", "Notifications"], s_bg: ["پس‌زمینهٔ تصاویر تخت جمشید", "Persepolis photo background"], s_on: ["روشن", "On"], s_off: ["خاموش", "Off"],
+    s_acct: ["حساب کاربری", "Account"], s_app: ["دربارهٔ برنامه", "About the app"], s_ver: ["نسخهٔ وب‌اپ", "Web app version"], s_install: ["برای نصب: در مرورگر گزینهٔ «افزودن به صفحهٔ اصلی» را بزنید.", "To install: use “Add to Home screen” in your browser."], s_user: ["نام کاربری", "Username"],
+    log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
+    rd_h: ["وضعیت مدارک", "Readiness"], rd_left: ["{d} روز مانده", "{d} days left"], rd_exp: ["منقضی شده", "Expired"], rd_none: ["ثبت نشده", "Not set"], rd_rep: ["ریپک رزرو (موعد بعدی)", "Reserve repack (next due)"],
+    dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
+  });
   function tx(k) { var v = TX[k]; return v ? v[L === "fa" ? 0 : 1] : k; }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (_, k) { return o[k] === undefined ? "" : o[k]; }); }
   var FAD = "۰۱۲۳۴۵۶۷۸۹";
@@ -79,6 +86,8 @@
 
   /* ---------- dates ---------- */
   function g2j(gy, gm, gd) { var gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]; var gy2 = gm > 2 ? gy + 1 : gy; var days = 355666 + 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) + gd + gdm[gm - 1]; var jy = -1595 + 33 * Math.floor(days / 12053); days %= 12053; jy += 4 * Math.floor(days / 1461); days %= 1461; if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; } var jm = days < 186 ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30); var jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30); return [jy, jm, jd]; }
+  function j2g(jy, jm, jd) { jy += 1595; var days = -355668 + 365 * jy + Math.floor(jy / 33) * 8 + Math.floor(((jy % 33) + 3) / 4) + jd + (jm < 7 ? (jm - 1) * 31 : ((jm - 7) * 30) + 186); var gy = 400 * Math.floor(days / 146097); days %= 146097; if (days > 36524) { gy += 100 * Math.floor(--days / 36524); days %= 36524; if (days >= 365) days++; } gy += 4 * Math.floor(days / 1461); days %= 1461; if (days > 365) { gy += Math.floor((days - 1) / 365); days = (days - 1) % 365; } var gd = days + 1; var sal = [0, 31, ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; var gm; for (gm = 0; gm < 13 && gd > sal[gm]; gm++) gd -= sal[gm]; return [gy, gm, gd]; }
+  var JM = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function dateTxt(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); if (!m) return iso ? D(iso) : "—"; if (L === "fa") { var j = g2j(+m[1], +m[2], +m[3]); return D(j[0] + "/" + pad(j[1]) + "/" + pad(j[2])); } return m[1] + "-" + m[2] + "-" + m[3]; }
   function todayTehran() { return new Date(Date.now() + 3.5 * 3600 * 1000).toISOString().slice(0, 10); }
@@ -254,7 +263,7 @@
       S.sess = { token: r.token, username: r.username }; if (r.must_change) { S.sess.mustChange = true; S.tempOld = p; S.tab = "me"; S.view = "f_pw"; } saveSess(S.sess, remember); S.busy = false; if (!S.sess.mustChange) S.tab = "loads"; localStorage.removeItem(LSK.prev); render(); refreshAll().then(startPolling);
     }).catch(function (e) { S.busy = false; var c = (e.code || "").replace(/^.*?(bad_login|locked|pending|net).*$/, "$1"); S.err = tx(["bad_login", "locked", "pending", "net"].indexOf(c) >= 0 ? c : "fail"); render(); });
   }
-  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "alerts") { S.notes.forEach(function (n) { n.read = true; }); saveNotes(); } if (t === "msgs") S.peer = ""; S.anim = true; render(); window.scrollTo(0, 0); }
+  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; S.anim = true; render(); window.scrollTo(0, 0); }
   function sendMsg(body, attach) {
     return authed("jumper_send", { p_body: body, p_attach: attach || null }).then(function () { return refreshMsgs(); }).then(function () { render(); });
   }
@@ -299,12 +308,13 @@
   }
   function loadCard(x) {
     var l = x.l, mine = isMine(l), key = x.date + "#" + l.n, slots = l.slots || [], free = Math.max(0, (l.cap || 0) - slots.length);
-    var h = '<div class="card ld cmp' + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="cmp-top"><b class="cmp-n">' + tx("load") + " " + D(l.n) + "</b>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + chipFor(l.st);
+    var sc = l.st === "Boarding" || l.st === "Ready" || l.st === "Preparation Complete" ? " s-go" : l.st === "Completed" ? " s-ok" : l.st === "Cancelled" || l.st === "Hold" ? " s-bad" : "", pc = l.cap ? Math.min(100, Math.round(slots.length * 100 / l.cap)) : 0;
+    var h = '<div class="card ld cmp' + sc + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="cmp-top"><b class="cmp-n">' + tx("load") + " " + D(l.n) + "</b>" + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + chipFor(l.st);
     if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
     else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
     h += '<span class="cmp-go">👥 ' + D(slots.length) + "/" + D(l.cap || 0) + " ›</span></div>";
     var meta = [esc(l.type || ""), '<span class="ltr">' + esc(l.ac || "") + "</span>", l.alt ? D(l.alt) + ' <span dir="ltr">ft</span>' : "", esc(l.pur || ""), free ? tx("g_free") + " " + D(free) : ""].filter(Boolean);
-    return h + '<div class="cmp-meta">' + meta.join('<i>·</i>') + "</div></div>";
+    return h + '<div class="cmp-meta">' + meta.join('<i>·</i>') + '</div><div class="seatbar" title="' + pc + '%"><i style="width:' + pc + '%"></i></div></div>';
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
   function loadModal() {
@@ -322,7 +332,7 @@
   }
   function viewLoads() {
     var all = loadsFlat(), today = todayTehran(), todays = all.filter(function (x) { return x.date === today; });
-    var mine = todays.filter(function (x) { return isMine(x.l); }), h = "";
+    var mine = todays.filter(function (x) { return isMine(x.l); }), h = weatherCard();
     if (S.loadedAt) h += '<p class="muted">' + tx("upd") + ": " + clockTxt(S.loadedAt) + " · " + tx("today") + " " + dateTxt(today) + "</p>";
     if (!todays.length) return h + '<div class="empty">' + tx("loads_none") + "</div>";
     if (mine.length) h += '<div class="h2">' + tx("loads_mine") + "</div>" + mine.map(loadCard).join("");
@@ -344,7 +354,8 @@
   }
   function weatherCard() {
     var w = S.wxPlace || CFG.wx || { name: "" }, c = S.wx;
-    var h = '<div class="card wx3"><div class="wx3-top"><span class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</span><b class="wx3-t" dir="ltr">' + (c ? D(Math.round(c.temperature_2m)) + "°" : "—") + '</b><span class="wx3-d">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span><span class="wx3-p">' + (w.name ? esc(w.name) : "") + (c ? " · " + clockTxt(S.wxAt) : "") + "</span></div>";
+    var wc = c ? c.weather_code : 0, wk = wc <= 1 ? "clear" : wc <= 3 ? "cloud" : wc <= 48 ? "fog" : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? "snow" : "rain";
+    var h = '<div class="card wx3 wk-' + wk + '"><div class="wx3-top"><span class="wxi">' + (c ? (WX[c.weather_code] || WX[3])[0] : "⛅") + '</span><b class="wx3-t" dir="ltr">' + (c ? D(Math.round(c.temperature_2m)) + "°" : "—") + '</b><span class="wx3-d">' + (c ? (WX[c.weather_code] || WX[3])[L === "fa" ? 1 : 2] : "…") + '</span><span class="wx3-p">' + (w.name ? esc(w.name) : "") + (c ? " · " + clockTxt(S.wxAt) : "") + "</span></div>";
     if (c) {
       var dir = DIRS[Math.round((c.wind_direction_10m || 0) / 45) % 8][L === "fa" ? 0 : 1];
       function chip(icn, val, tt) { return '<span class="wx3-c" title="' + esc(tt) + '">' + ic(icn) + '<b dir="ltr">' + val + "</b></span>"; }
@@ -369,12 +380,21 @@
     if (!navigator.geolocation) return fin(null);
     navigator.geolocation.getCurrentPosition(function (p) { fin(p.coords); }, function () { fin(null); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
   }
-  function viewAlerts() {
-    var h = weatherCard();
-    if (typeof Notification !== "undefined") h += Notification.permission === "granted" ? '<p class="muted">' + tx("n_on") + "</p>" : '<button class="btn sm" data-act="notif" style="margin-bottom:12px">🔔 ' + tx("enable_n") + "</button>";
-    if (!S.notes.length) return h + '<div class="empty">' + tx("alerts_none") + "</div>";
-    h += S.notes.map(function (n) { return '<div class="note"><div class="ni">' + n.icon + '</div><div class="grow">' + esc(noteText(n)) + '<div class="muted">' + dateTxt(new Date(n.at).toISOString().slice(0, 10)) + " " + clockTxt(n.at) + "</div></div></div>"; }).join("");
-    return h + '<button class="btn sm" data-act="clearnotes">' + tx("clear") + "</button>";
+  function bellModal() {
+    if (!S.bell) return "";
+    var h = '<div class="modal" data-act="closebell"><div class="sheet"><div class="ld-title">' + ic("alerts") + " " + tx("t_alerts") + "</div>";
+    if (!S.notes.length) h += '<div class="empty">' + tx("alerts_none") + "</div>";
+    else h += '<div class="notelist">' + S.notes.map(function (n) { return '<div class="note"><div class="ni">' + n.icon + '</div><div class="grow">' + esc(noteText(n)) + '<div class="muted">' + dateTxt(new Date(n.at).toISOString().slice(0, 10)) + " " + clockTxt(n.at) + "</div></div></div>"; }).join("") + "</div>";
+    return h + '<div class="rowbtns">' + (S.notes.length ? '<button class="btn sm" data-act="clearnotes">' + tx("clear") + "</button>" : "") + '<button class="btn pri sm" data-act="closebell">' + tx("close") + "</button></div></div></div>";
+  }
+  function viewSettings() {
+    var bgOn = lsGet("mj_bg", true), np = typeof Notification === "undefined" ? "" : Notification.permission;
+    var h = '<div class="h2">' + tx("s_lang") + '</div><div class="card setrow">' + langSwitch() + "</div>";
+    h += '<div class="h2">' + tx("s_notif") + '</div><div class="card setrow">' + (typeof Notification === "undefined" ? '<span class="muted">—</span>' : np === "granted" ? '<span class="chip ok">' + tx("s_on") + '</span><span class="muted">' + tx("n_on") + "</span>" : '<button class="btn sm" data-act="notif">' + ic("alerts") + " " + tx("enable_n") + "</button>") + "</div>";
+    h += '<div class="card setrow"><span class="grow">' + tx("s_bg") + '</span><button class="switch' + (bgOn ? " on" : "") + '" data-act="setbg" aria-pressed="' + (bgOn ? "true" : "false") + '"><i></i></button></div>';
+    h += '<div class="h2">' + tx("s_acct") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_user") + '</span><span class="ltr">' + esc(D(S.sess.username)) + '</span></div><div><span>' + tx("f_pw") + '</span><span><button class="btn sm" data-act="gopw">' + tx("f_pw") + '</button></span></div></div></div>';
+    h += '<div class="h2">' + tx("s_app") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_ver") + '</span><span class="ltr">' + APPV + '</span></div></div><p class="muted small">' + tx("s_install") + '</p></div>';
+    return h + '<button class="btn wide danger" data-act="logout">' + ic("logout") + " " + tx("logout") + "</button>";
   }
   /* ---------- chat (WhatsApp-style) ---------- */
   var CHAT_URL = CFG.url + "/storage/v1/object/public/chat-files/";
@@ -411,7 +431,7 @@
   function updateThread() {
     var th = document.getElementById("thr"); if (!th) return;
     var near = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 160;
-    th.innerHTML = threadHtml(); voxRefresh();
+    th.innerHTML = threadHtml(); fixDigits(th); voxRefresh();
     if (near && th.lastElementChild) th.lastElementChild.scrollIntoView({ block: "end" });
   }
   function composeHtml() {
@@ -525,6 +545,7 @@
 
   var ICN = {
     loads: '<path d="M3 10.500a9 9 0 0 1 18 0c-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0-1.500-1.200-3-1.200-4.500 0C6 9.300 4.500 9.300 3 10.500z"/><path d="M3 10.500l8 7.500M21 10.500l-8 7.500M12 10.500v7.500"/><circle cx="12" cy="19.800" r="1.700" fill="currentColor"/>',
+    gear: '<circle cx="12" cy="12" r="3.200"/><path d="M12 2.500v3M12 18.500v3M2.500 12h3M18.500 12h3M5.300 5.300l2.100 2.100M16.600 16.600l2.100 2.100M5.300 18.700l2.100-2.100M16.600 7.400l2.100-2.100"/>',
     alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2.2 7 2.2 7H3.8S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M4 4.5C3 6 2.7 7 2.6 8M20 4.5c1 1.5 1.3 2.5 1.4 3.5" />',
     msgs: '<path d="M4 4.5h16a1 1 0 0 1 1 1v10.5a1 1 0 0 1-1 1h-9.5L5.5 21v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><circle cx="8.5" cy="10.8" r=".9" fill="currentColor"/><circle cx="12" cy="10.8" r=".9" fill="currentColor"/><circle cx="15.5" cy="10.8" r=".9" fill="currentColor"/>',
     me: '<path d="M5 13a7 7 0 0 1 14 0v2H5z"/><path d="M5 15v1.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V15"/><path d="M8.5 13h7"/><path d="M12 6V4"/>',
@@ -545,14 +566,15 @@
 
   /* ---------- editing (jumper edits, confirms, staff applies) ---------- */
   var SNAKE = { phone: "phone", email: "email", heightCm: "height_cm", weightKg: "weight_kg", organization: "organization", licenseType: "license_type", licenseNumber: "license_number", membershipExpiry: "membership_expiry", firstJumpDate: "first_jump_date", rigOwnership: "rig_ownership", rigType: "rig_type", mainModel: "main_model", mainSize: "main_size", reserveRepackDate: "reserve_repack_date", emergencyPhone: "emergency_phone", emergencyRelation: "emergency_relation" };
+  function T3(arr) { return arr.map(function (x) { return typeof x === "string" ? [x, x, x] : x; }); }
   var OPT = {
-    blood: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"],
+    blood: T3(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", ["Unknown", "نامشخص", "Unknown"]]),
     gender: [["Male", "مرد", "Male"], ["Female", "زن", "Female"], ["Other", "سایر", "Other"]],
-    org: ["USPA", "BPA", "FAI", "PASA (South Africa)", "CSPA (Canada)", "APF (Australia)", "Iran Air Sports Federation", "Iran Civil Aviation Organization", "Other"],
-    lic: ["None", "A", "B", "C", "D", "E"],
+    org: [["USPA", "USPA (آمریکا)", "USPA"], ["BPA", "BPA (بریتانیا)", "BPA"], ["FAI", "FAI (فدراسیون جهانی هوانوردی)", "FAI"], ["PASA (South Africa)", "PASA (آفریقای جنوبی)", "PASA (South Africa)"], ["CSPA (Canada)", "CSPA (کانادا)", "CSPA (Canada)"], ["APF (Australia)", "APF (استرالیا)", "APF (Australia)"], ["Iran Air Sports Federation", "فدراسیون ورزش‌های هوایی ایران", "Iran Air Sports Federation"], ["Iran Civil Aviation Organization", "سازمان هواپیمایی کشوری ایران", "Iran Civil Aviation Organization"], ["Other", "سایر", "Other"]],
+    lic: [["None", "ندارد", "None"], ["A", "گواهی A", "A"], ["B", "گواهی B", "B"], ["C", "گواهی C", "C"], ["D", "گواهی D", "D"], ["E", "گواهی E", "E"]],
     rigown: [["Own", "شخصی", "Own"], ["Rental", "کرایه‌ای", "Rental"]],
-    rig: ["Vector 3", "Javelin", "Icon A5", "Mirage", "Wings", "Infinity", "SWS", "Parachute de France", "ParAAvis", "Other"],
-    med: ["FAA Medical", "Iran CAO Medical", "Medical Certificate", "Pre-Jump Medical Screening", "Self-Declaration", "Other"],
+    rig: [["Vector 3", "وکتور ۳ (Vector 3)", "Vector 3"], ["Javelin", "جاولین (Javelin)", "Javelin"], ["Icon A5", "آیکون A5 (Icon A5)", "Icon A5"], ["Mirage", "میراژ (Mirage)", "Mirage"], ["Wings", "وینگز (Wings)", "Wings"], ["Infinity", "اینفینیتی (Infinity)", "Infinity"], ["SWS", "SWS", "SWS"], ["Parachute de France", "پاراشوت دو فرانس", "Parachute de France"], ["ParAAvis", "پاراویس (ParAAvis)", "ParAAvis"], ["Other", "سایر", "Other"]],
+    med: [["FAA Medical", "مدیکال FAA", "FAA Medical"], ["Iran CAO Medical", "مدیکال سازمان هواپیمایی ایران", "Iran CAO Medical"], ["Medical Certificate", "گواهی پزشکی", "Medical Certificate"], ["Pre-Jump Medical Screening", "معاینهٔ پزشکی پیش از پرش", "Pre-Jump Medical Screening"], ["Self-Declaration", "اظهار شخصی", "Self-Declaration"], ["Other", "سایر", "Other"]],
     rel: [["Father", "پدر", "Father"], ["Mother", "مادر", "Mother"], ["Brother", "برادر", "Brother"], ["Sister", "خواهر", "Sister"], ["Wife", "همسر", "Wife"], ["Husband", "همسر", "Husband"], ["Friend", "دوست", "Friend"], ["Other", "سایر", "Other"]]
   };
   var EDIT = {
@@ -564,13 +586,25 @@
   };
   function LAT(s) { return String(s === null || s === undefined ? "" : s).replace(/[۰-۹]/g, function (d) { return FAD.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }); }
   function getVal(k) { var p = prof(), e = ext(); if (k === "extraLicenses") return e.extraLicenses || []; var v = SNAKE[k] ? p[SNAKE[k]] : e[k]; return v === null || v === undefined ? "" : v; }
-  function optLabel(set, v) { var list = OPT[set]; for (var i = 0; i < list.length; i++) { if (typeof list[i] === "string") { if (list[i] === v) return v; } else if (list[i][0] === v) return list[i][L === "fa" ? 1 : 2]; } return v; }
+  function optLabel(set, v) { var list = OPT[set]; for (var i = 0; i < list.length; i++) { if (list[i][0] === v) return list[i][L === "fa" ? 1 : 2]; } return v; }
   function optHtml(set, cur) {
     var list = OPT[set], h = '<option value="">—</option>';
-    list.forEach(function (o) { var val = typeof o === "string" ? o : o[0], lab = typeof o === "string" ? o : o[L === "fa" ? 1 : 2]; h += '<option value="' + esc(val) + '"' + (val === cur ? " selected" : "") + ">" + esc(lab) + "</option>"; });
+    list.forEach(function (o) { var val = o[0], lab = o[L === "fa" ? 1 : 2]; h += '<option value="' + esc(val) + '"' + (val === cur ? " selected" : "") + ">" + esc(lab) + "</option>"; });
     return h;
   }
   function startEdit(folder) { var vals = {}; EDIT[folder].forEach(function (f) { var v = getVal(f[0]); vals[f[0]] = f[2] === "xl" ? JSON.parse(JSON.stringify(v)) : String(v); }); S.edit = { folder: folder, vals: vals, review: false, err: "" }; render(); window.scrollTo(0, 0); }
+  function dpHtml(k, v) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""), j = m ? g2j(+m[1], +m[2], +m[3]) : [0, 0, 0], ty = g2j(+todayTehran().slice(0, 4), +todayTehran().slice(5, 7), +todayTehran().slice(8, 10))[0];
+    function sel(part, lab, from, to, cur, nameFn) { var o = '<option value="">' + lab + "</option>"; for (var i = from; i <= to; i++) o += '<option value="' + i + '"' + (i === cur ? " selected" : "") + ">" + esc(nameFn ? nameFn(i) : D(i)) + "</option>"; return '<select class="dps" data-dp="' + k + '" data-part="' + part + '">' + o + "</select>"; }
+    return '<div class="dpick">' + sel("d", tx("dp_d"), 1, 31, j[2]) + sel("m", tx("dp_m"), 1, 12, j[1], function (i) { return JM[i - 1]; }) + sel("y", tx("dp_y"), 1300, ty + 30, j[0]) + "</div>";
+  }
+  function onDp(i) {
+    var k = i.getAttribute("data-dp"), box = i.parentNode, v = {}; [].forEach.call(box.querySelectorAll("select"), function (x) { v[x.getAttribute("data-part")] = +x.value || 0; });
+    if (!v.y && !v.m && !v.d) { S.edit.vals[k] = ""; return; }
+    if (!v.y || !v.m || !v.d) return;
+    var mx = v.m <= 6 ? 31 : v.m <= 11 ? 30 : 29; if (v.d > mx) { v.d = mx; box.querySelector('[data-part="d"]').value = String(mx); }
+    var g = j2g(v.y, v.m, v.d); S.edit.vals[k] = g[0] + "-" + pad(g[1]) + "-" + pad(g[2]);
+  }
   function editForm(folder) {
     var ed = S.edit, h = '<form class="card" id="ef" autocomplete="off">';
     EDIT[folder].forEach(function (f) {
@@ -583,7 +617,8 @@
       }
       var inp;
       if (f[2] === "select") inp = '<select data-ed="' + k + '">' + optHtml(f[3], v) + "</select>";
-      else inp = '<input data-ed="' + k + '" type="' + (f[2] === "date" ? "date" : "text") + '" class="' + (f[4] === "ltr" || f[2] !== "text" ? "ltr" : "") + '"' + (f[2] === "num" ? ' inputmode="decimal"' : f[2] === "tel" ? ' inputmode="tel"' : f[2] === "email" ? ' inputmode="email" autocapitalize="off"' : "") + ' value="' + esc(v) + '">';
+      else if (f[2] === "date" && L === "fa") inp = dpHtml(k, v);
+      else inp = '<input data-ed="' + k + '" type="' + (f[2] === "date" ? "date" : "text") + '" class="' + (f[4] === "ltr" || f[2] !== "text" ? "ltr" : "") + '"' + (f[2] === "num" ? ' inputmode="decimal"' : f[2] === "tel" ? ' inputmode="tel"' : f[2] === "email" ? ' inputmode="email" autocapitalize="off"' : "") + ' value="' + esc(f[2] === "num" || f[2] === "tel" ? D(v) : v) + '">';
       h += '<label class="fld"><span>' + lab + "</span>" + inp + "</label>";
       if (k === "bloodType" && String(v || "") !== String(getVal("bloodType") || "") && v) h += '<div class="card bloodf"><b>' + tx("blood_file") + '</b><div class="muted">' + tx("blood_hint") + '</div><label class="btn sm">' + tx("blood_pick") + '<input type="file" hidden data-bf="1" accept="image/jpeg,image/png,image/webp,application/pdf"></label> <span class="muted bfname">' + (ed.bf ? esc(ed.bf.name) : "") + "</span></div>";
     });
@@ -605,7 +640,7 @@
     return ch;
   }
   function showVal(f, v) {
-    if (f[2] === "xl") return (v || []).length ? v.map(function (r) { return r.authority + " " + r.number; }).join("، ") : "—";
+    if (f[2] === "xl") return (v || []).length ? v.map(function (r) { return optLabel("org", r.authority) + " " + r.number; }).join("، ") : "—";
     if (v === "" || v === null) return "—";
     if (f[2] === "select") return optLabel(f[3], v);
     if (f[2] === "date") return dateTxt(v);
@@ -618,22 +653,31 @@
   }
   function folderView(key) {
     var p = prof(), e = ext();
-    if (key === "f_profile") return kv([["k_first", L === "fa" ? (e.firstNameFa || p.first_name) : (e.firstNameEn || p.first_name)], ["k_last", L === "fa" ? (e.lastNameFa || p.last_name) : (e.lastNameEn || p.last_name)], ["k_father", L === "fa" ? (e.fatherNameFa || e.fatherName) : (e.fatherNameEn || e.fatherName)], ["k_birth", dateTxt(e.birthDate)], ["k_blood", e.bloodType], ["k_gender", e.gender ? optLabel("gender", e.gender) : ""], ["k_nat", e.nationalityType === "Foreign" ? e.nationalityCountry : (L === "fa" ? "ایرانی" : "Iranian")], ["k_id", e.nationalId || e.passportNumber], ["k_phone", p.phone], ["k_email", p.email], ["k_h", p.height_cm], ["k_w", p.weight_kg]]);
+    if (key === "f_profile") return kv([["k_first", L === "fa" ? (e.firstNameFa || p.first_name) : (e.firstNameEn || p.first_name)], ["k_last", L === "fa" ? (e.lastNameFa || p.last_name) : (e.lastNameEn || p.last_name)], ["k_father", L === "fa" ? (e.fatherNameFa || e.fatherName) : (e.fatherNameEn || e.fatherName)], ["k_birth", dateTxt(e.birthDate)], ["k_blood", optLabel("blood", e.bloodType)], ["k_gender", e.gender ? optLabel("gender", e.gender) : ""], ["k_nat", e.nationalityType === "Foreign" ? e.nationalityCountry : (L === "fa" ? "ایرانی" : "Iranian")], ["k_id", e.nationalId || e.passportNumber], ["k_phone", p.phone], ["k_email", p.email], ["k_h", p.height_cm], ["k_w", p.weight_kg]]);
     if (key === "f_cred") {
-      var h = '<div class="h2">' + tx("lic_main") + "</div>" + kv([["k_org", p.organization], ["k_ltype", p.license_type], ["k_lno", p.license_number]]);
-      (e.extraLicenses || []).forEach(function (x, i) { h += '<div class="h2">' + tx("lic_n") + " " + D(i + 2) + "</div>" + kv([["k_org", x.authority], ["k_lno", x.number]]); });
+      var h = '<div class="h2">' + tx("lic_main") + "</div>" + kv([["k_org", optLabel("org", p.organization)], ["k_ltype", optLabel("lic", p.license_type)], ["k_lno", p.license_number]]);
+      (e.extraLicenses || []).forEach(function (x, i) { h += '<div class="h2">' + tx("lic_n") + " " + D(i + 2) + "</div>" + kv([["k_org", optLabel("org", x.authority)], ["k_lno", x.number]]); });
       return h + '<div class="h2">' + tx("mem_h") + "</div>" + kv([["k_mem", e.membershipNumber], ["k_memx", dateTxt(p.membership_expiry)], ["k_jumps", e.totalJumps], ["k_first_jump", dateTxt(p.first_jump_date)]]);
     }
-    if (key === "f_rig") { var due = ""; if (p.reserve_repack_date) { var d = new Date(p.reserve_repack_date + "T12:00:00Z"); if (!isNaN(d)) { d.setUTCDate(d.getUTCDate() + 180); due = d.toISOString().slice(0, 10); } } return kv([["k_rigown", p.rig_ownership === "Rental" ? tx("rental") : tx("own")], ["k_rigtype", p.rig_type], ["k_main", ((p.main_model || "") + " " + (p.main_size || "")).trim()], ["k_repack", dateTxt(p.reserve_repack_date)], ["k_repackdue", dateTxt(due)]]); }
-    if (key === "f_med") return kv([["k_medtype", e.medicalType], ["k_medx", dateTxt(e.medicalExpiry)], ["k_inprov", e.insuranceProvider], ["k_inno", e.insurancePolicyNumber], ["k_inx", dateTxt(e.insuranceExpiry)]]);
+    if (key === "f_rig") { var due = ""; if (p.reserve_repack_date) { var d = new Date(p.reserve_repack_date + "T12:00:00Z"); if (!isNaN(d)) { d.setUTCDate(d.getUTCDate() + 180); due = d.toISOString().slice(0, 10); } } return kv([["k_rigown", p.rig_ownership === "Rental" ? tx("rental") : tx("own")], ["k_rigtype", optLabel("rig", p.rig_type)], ["k_main", ((p.main_model || "") + " " + (p.main_size || "")).trim()], ["k_repack", dateTxt(p.reserve_repack_date)], ["k_repackdue", dateTxt(due)]]); }
+    if (key === "f_med") return kv([["k_medtype", optLabel("med", e.medicalType)], ["k_medx", dateTxt(e.medicalExpiry)], ["k_inprov", e.insuranceProvider], ["k_inno", e.insurancePolicyNumber], ["k_inx", dateTxt(e.insuranceExpiry)]]);
     if (key === "f_emg") return kv([["k_ename", L === "fa" ? (e.emergencyNameFa || p.emergency_name) : (e.emergencyNameEn || p.emergency_name)], ["k_ephone", p.emergency_phone], ["k_erel", p.emergency_relation ? optLabel("rel", p.emergency_relation) : ""]]);
     return "";
+  }
+  function logStats(rows) {
+    var yr = function (iso) { return L === "fa" ? g2j(+iso.slice(0, 4), +iso.slice(5, 7), +iso.slice(8, 10))[0] : +iso.slice(0, 4); }, ty = yr(todayTehran());
+    var year = 0, mx = 0, last = "", types = {};
+    rows.forEach(function (r) { if (r.d) { if (yr(r.d) === ty) year++; if (!last || r.d > last) last = r.d; } if (+r.alt > mx) mx = +r.alt; var t = r.jt || "—"; types[t] = (types[t] || 0) + 1; });
+    var ago = last ? daysUntil(last) : null, tk = Object.keys(types).sort(function (a, b) { return types[b] - types[a]; }).slice(0, 5), top = tk.length ? types[tk[0]] : 1;
+    var h = '<div class="card lstats"><div class="h2">' + tx("log_stats") + '</div><div class="lsg"><div><b>' + D(rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "—") + "</b><span>" + tx("ls_max") + " (ft)</span></div><div><b>" + (last ? dateTxt(last) : "—") + "</b><span>" + tx("ls_last") + (ago !== null && ago <= 0 ? " · " + fmt(tx("ls_ago"), { d: -ago }) : "") + "</span></div></div>";
+    if (tk.length) { h += '<div class="h2" style="margin-top:12px">' + tx("ls_types") + "</div>"; tk.forEach(function (t) { h += '<div class="lbar"><span>' + esc(t) + '</span><div><i style="width:' + Math.round(types[t] * 100 / top) + '%"></i></div><b>' + D(types[t]) + "</b></div>"; }); }
+    return h + "</div>";
   }
   function logBody() {
     var rows = S.log;
     if (rows === null || rows === undefined) return '<div class="empty">…</div>';
     if (!rows.length) return '<div class="empty">' + tx("log_none") + "</div>";
-    var h = '<p class="muted">' + tx("log_total") + ": " + D(rows.length) + '</p><div class="card logt"><div class="lr lh"><span>' + tx("log_date") + "</span><span>" + tx("log_load") + "</span><span>" + tx("log_ac") + "</span><span>" + tx("log_type") + "</span><span>" + tx("log_alt") + "</span></div>";
+    var h = logStats(rows) + '<div class="card logt"><div class="lr lh"><span>' + tx("log_date") + "</span><span>" + tx("log_load") + "</span><span>" + tx("log_ac") + "</span><span>" + tx("log_type") + "</span><span>" + tx("log_alt") + "</span></div>";
     rows.forEach(function (r) { h += '<div class="lr"><span>' + dateTxt(r.d) + "</span><span>" + D(r.n) + '</span><span class="ltr">' + esc(r.ac || "—") + "</span><span>" + esc(r.jt || "—") + "</span><span>" + (r.alt ? D(r.alt) : "—") + "</span></div>"; });
     return h + "</div>";
   }
@@ -666,13 +710,27 @@
     if (!S.me.found) return '<div class="empty">' + tx("me_nf") + "</div>";
     if (S.view) { var fb = folderBody(S.view); if (!S.edit || S.edit.folder !== S.view) BAR = '<button class="btn" data-act="back">' + (L === "fa" ? "→ " : "← ") + tx("back") + "</button>" + (EDIT[S.view] ? '<button class="btn pri grow" data-act="edit" data-f="' + S.view + '">✏️ ' + tx("edit") + "</button>" : ""); return '<div class="backrow"><b class="ftitle">' + tx(S.view) + "</b></div>" + fb; }
     var h = '<div class="card row">' + (S.photo ? '<img class="avatar" src="' + esc(S.photo) + '" alt="">' : '<div class="avatar ph">' + ic("user") + "</div>") + '<div class="grow"><div class="ld-title">' + esc(personName()) + '</div><div class="muted ltr">' + esc((prof().code || "")) + " " + esc(D(S.sess.username)) + "</div></div></div>";
+    h += readyCard();
     h += '<div class="folders">' + FOLDERS.map(function (f) { return '<button class="folder" style="--c:' + f[2] + '" data-folder="' + f[0] + '"><span class="fi">' + ic(f[1]) + "</span><b>" + tx(f[0]) + "</b></button>"; }).join("") + "</div>";
     return h;
   }
-  function modalHtml() { return loadModal() + sosModal() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
+  function readyCard() {
+    var p = prof(), e = ext(), due = "";
+    if (p.reserve_repack_date) { var d = new Date(p.reserve_repack_date + "T12:00:00Z"); if (!isNaN(d)) { d.setUTCDate(d.getUTCDate() + 180); due = d.toISOString().slice(0, 10); } }
+    var items = [["w_mem", p.membership_expiry], ["w_med", e.medicalExpiry], ["w_ins", e.insuranceExpiry], ["rd_rep", due]];
+    var h = '<div class="card ready"><div class="h2">' + tx("rd_h") + '</div>';
+    items.forEach(function (it) { var dl = it[1] ? daysUntil(it[1]) : null, cls = dl === null ? "na" : dl < 0 ? "bad" : dl <= 30 ? "warn" : "ok", txt = dl === null ? tx("rd_none") : dl < 0 ? tx("rd_exp") : fmt(tx("rd_left"), { d: dl }); h += '<div class="rd ' + cls + '"><i></i><span class="grow"><b>' + tx(it[0]) + '</b><small>' + (it[1] ? dateTxt(it[1]) : "") + "</small></span><em>" + txt + "</em></div>"; });
+    return h + "</div>";
+  }
+  function modalHtml() { return bellModal() + loadModal() + sosModal() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
 
   function refreshLog() { return authed("jumper_logbook").then(function (d) { var n = JSON.stringify(d || []); if (n !== S.logSig) { S.logSig = n; S.log = d || []; return true; } return false; }).catch(function () { return false; }); }
   function handleAct(a, t, ev) {
+    if (a === "bell") { S.bell = true; S.notes.forEach(function (n) { n.read = true; }); saveNotes(); render(); return true; }
+    if (a === "closebell") { if (ev.target === t || t.tagName === "BUTTON") { S.bell = false; render(); } return true; }
+    if (a === "clearnotes") { S.notes = []; saveNotes(); render(); return true; }
+    if (a === "setbg") { lsSet("mj_bg", lsGet("mj_bg", true) ? false : true); render(); return true; }
+    if (a === "gopw") { S.tab = "me"; S.view = "f_pw"; S.anim = true; render(); window.scrollTo(0, 0); return true; }
     if (a === "openload") { S.modal = t.dataset.key; render(); return true; }
     if (a === "closemodal") { if (ev.target === t || t.tagName === "BUTTON") { S.modal = ""; render(); } return true; }
     if (a === "edit") { startEdit(t.dataset.f); return true; }
@@ -703,13 +761,31 @@
     if (a === "sosgo") { sendSos(); return true; }
     return false;
   }
+  var BG = { n: 10, i: 0, t: 0, el: null };
+  function bgApply() {
+    var on = lsGet("mj_bg", true);
+    if (!on) { if (BG.el) { BG.el.remove(); BG.el = null; } clearInterval(BG.t); BG.t = 0; return; }
+    if (BG.el) return;
+    var box = document.createElement("div"); box.id = "bgs"; box.setAttribute("aria-hidden", "true");
+    for (var i = 1; i <= BG.n; i++) { var e = document.createElement("i"); e.setAttribute("data-s", "hero/p" + i + ".webp"); box.appendChild(e); }
+    document.body.insertBefore(box, document.body.firstChild); BG.el = box; BG.i = Math.floor(Math.random() * BG.n);
+    function show() { var els = box.children, el = els[BG.i]; if (!el.style.backgroundImage) el.style.backgroundImage = 'url("' + el.getAttribute("data-s") + '")'; for (var j = 0; j < els.length; j++) els[j].classList.toggle("on", j === BG.i); var nx = els[(BG.i + 1) % BG.n]; if (!nx.style.backgroundImage) nx.style.backgroundImage = 'url("' + nx.getAttribute("data-s") + '")'; }
+    show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
+  }
   var BAR = "";
+  var APPV = "13";
   function viewShell() {
-    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "alerts" ? viewAlerts() : S.tab === "msgs" ? viewMsgs() : viewMe();
+    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
-    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + langSwitch() + '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + '</button></div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
-      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("alerts", "alerts", tx("t_alerts"), nA, "alerts") + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "user", tx("t_me")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
+    return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + "</b>" + langSwitch() + '<button class="iconbtn bellbtn" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button><button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + '</button></div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
+      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
+  }
+  var NOFIX = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION)$/;
+  function fixDigits(root) {
+    if (!root) return; var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, list = [];
+    while ((n = w.nextNode())) { var pe = n.parentNode; if (!pe || NOFIX.test(pe.nodeName) || (pe.closest && pe.closest(".mtxt,[data-keep]"))) continue; list.push(n); }
+    list.forEach(function (t) { var o = t.nodeValue; if (!/[0-9۰-۹٠-٩]/.test(o)) return; var v = D(o); if (v !== o) t.nodeValue = v; });
   }
   function render() {
     document.documentElement.lang = L; document.documentElement.dir = L === "fa" ? "rtl" : "ltr";
@@ -719,7 +795,7 @@
     if (keepMsg && document.getElementById("mt")) document.getElementById("mt").value = keepMsg;
     if (!S.sess && document.getElementById("lr")) document.getElementById("lr").checked = keepR;
     if (!S.sess) { if (keepU) document.getElementById("lu").value = keepU; if (keepP) document.getElementById("lp").value = keepP; }
-    S.anim = false;
+    S.anim = false; fixDigits($app); bgApply();
     if (S.tab === "msgs" && S.sess && S.peer && S.peer !== "pick") { chatToggle(); voxRefresh(); var th = document.querySelector(".thread"); if (th && th.lastElementChild) th.lastElementChild.scrollIntoView({ block: "end" }); }
   }
 
@@ -731,7 +807,7 @@
     if (t.dataset.folder) { S.view = t.dataset.folder; S.anim = true; S.err = ""; S.edit = null; if (S.view === "f_log") refreshLog().then(render); render(); return window.scrollTo(0, 0); }
     var a = t.dataset.act;
     if (a && handleAct(a, t, ev)) return;
-    if (a === "forgot") { ev.preventDefault(); S.mode = "forgot"; S.err = ""; S.forgotCode = ""; render(); } else if (a === "tologin") { ev.preventDefault(); S.mode = ""; S.err = ""; render(); } else if (a === "back") { S.view = ""; S.edit = null; render(); } else if (a === "logout") signOut(); else if (a === "notif") askNotif(); else if (a === "clearnotes") { S.notes = []; saveNotes(); render(); }
+    if (a === "forgot") { ev.preventDefault(); S.mode = "forgot"; S.err = ""; S.forgotCode = ""; render(); } else if (a === "tologin") { ev.preventDefault(); S.mode = ""; S.err = ""; render(); } else if (a === "back") { S.view = ""; S.edit = null; render(); } else if (a === "logout") signOut(); else if (a === "notif") askNotif();
   });
   document.addEventListener("submit", function (ev) {
     ev.preventDefault();
@@ -757,6 +833,7 @@
   function onEditInput(ev) {
     var i = ev.target; if (!i || !i.getAttribute || !S.edit) return;
     if (i.getAttribute("data-bf")) { var bf = i.files && i.files[0]; if (bf && (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(bf.type) || bf.size > 5 * 1024 * 1024)) { i.value = ""; S.edit.bf = null; return toast(tx("blood_big")); } S.edit.bf = bf || null; var bn = document.querySelector(".bfname"); if (bn) bn.textContent = bf ? bf.name : ""; return; }
+    if (i.getAttribute("data-dp")) return onDp(i);
     var k = i.getAttribute("data-ed"); if (k) { var was = S.edit.vals[k]; S.edit.vals[k] = i.value; if (k === "bloodType" && ev.type === "change" && was !== i.value) { render(); } return; }
     var xi = i.getAttribute("data-xl"); if (xi !== null && xi !== undefined) { S.edit.vals.extraLicenses[+xi][i.getAttribute("data-xf")] = i.value; }
   }
