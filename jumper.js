@@ -133,7 +133,8 @@
   /* spoken call for the jumper's OWN load only (same wording as the desktop manifest: 20 / 15 / 10 minutes) */
   var VA = null, VQ = Promise.resolve();
   var SIL = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="; function vUnlock() { try { if (!VA) { VA = new Audio(); VA.preload = "auto"; } VA.src = SIL; var pr = VA.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) { /* ignore */ } }
-  ["touchstart", "pointerdown", "click", "keydown"].forEach(function (n) { document.addEventListener(n, function f() { vUnlock(); document.removeEventListener(n, f, true); }, true); });
+  ["touchstart", "touchend", "pointerdown", "click", "keydown"].forEach(function (n) { document.addEventListener(n, function () { if (!VA || VA.paused) vUnlock(); }, true); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) { pinging = false; try { ping(); } catch (e) { /* ignore */ } } });
   function playClip(name) {
     return new Promise(function (res) {
       try {
@@ -340,7 +341,7 @@
   function refreshAll() { return Promise.all([refreshMe(), refreshLoads(), refreshMsgs(), refreshDm(), refreshPeers(), refreshGroups()]).then(function () { render(); }); }
   var pinging = false;
   function ping() {
-    if (document.hidden || !S.sess || pinging) return; pinging = true;
+    if (document.hidden || !S.sess || pinging) return; pinging = true; setTimeout(function () { pinging = false; }, 6000);
     dmPing();
     authed("jumper_ping").then(function (r) {
       pinging = false; if (!r) return; var jobs = [];
@@ -353,7 +354,7 @@
     stopPolling();
     pushSync(); presBeat(); presRefresh();
     timers.push(setInterval(presBeat, 30000)); timers.push(setInterval(presRefresh, 12000));
-    timers.push(setInterval(ping, 3000));
+    timers.push(setInterval(ping, 1500));
     timers.push(setInterval(function () { if (!document.hidden && S.sess) refreshMe().then(function (ch) { if (ch) softRender(); }); }, 30000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess) loadWeather().then(softRender); }, 600000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess && (S.view === "f_log" || S.tab === "log")) refreshLog().then(function (ch) { if (ch) softRender(); }); }, 60000));
@@ -1253,7 +1254,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "39";
+  var APPV = "40";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
