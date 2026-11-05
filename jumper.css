@@ -696,3 +696,8 @@ html[dir=ltr] .c2-cd { right: 14px; }
   .tabs { min-height: 0; padding: 4px 6px calc(max(4px, env(safe-area-inset-bottom, 0px) - 22px) + var(--gap)); position: relative; }
   .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 140px; background: #0b130e; pointer-events: none; }
 }
+
+/* ===== v37: iPhone — remove the fixed bar height that left an empty strip under the menu ===== */
+@supports (-webkit-touch-callout: none) {
+  .tabs { height: auto !important; min-height: 0 !important; padding-bottom: calc(max(2px, env(safe-area-inset-bottom, 0px) - 26px) + var(--gap)) !important; }
+}
