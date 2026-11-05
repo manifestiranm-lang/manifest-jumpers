@@ -701,3 +701,10 @@ html[dir=ltr] .c2-cd { right: 14px; }
 @supports (-webkit-touch-callout: none) {
   .tabs { height: auto !important; min-height: 0 !important; padding-bottom: calc(max(2px, env(safe-area-inset-bottom, 0px) - 26px) + var(--gap)) !important; }
 }
+
+/* ===== v38: iPhone — shell really reaches the screen bottom; logbook cards more solid ===== */
+@supports (-webkit-touch-callout: none) {
+  .shell { height: calc(var(--vh, 100dvh) + var(--gap)) !important; }
+  .shell:has(.chatwrap) { height: var(--vh, 100dvh) !important; }
+}
+.card.lstats, .card.logt, .logt, .card:has(.logt) { --panel: rgba(12,20,16,.9); background: rgba(12,20,16,.9) !important; }

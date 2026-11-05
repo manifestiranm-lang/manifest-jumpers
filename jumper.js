@@ -73,7 +73,7 @@
     log_none: ["هنوز پرشی در لاگ‌بوک شما ثبت نشده است.", "No jumps in your logbook yet."], log_total: ["تعداد پرش‌های ثبت‌شده", "Recorded jumps"], log_date: ["تاریخ", "Date"], log_load: ["لود", "Load"], log_ac: ["هواپیما", "Aircraft"], log_type: ["نوع پرش", "Type"], log_alt: ["ارتفاع", "Alt"]
   });
   Object.assign(TX, {
-    s_lang: ["زبان", "Language"], s_notif: ["اعلان‌ها", "Notifications"], s_bg: ["پس‌زمینهٔ تصاویر تخت جمشید", "Persepolis photo background"], s_on: ["روشن", "On"], s_off: ["خاموش", "Off"],
+    s_lang: ["زبان", "Language"], s_notif: ["اعلان‌ها", "Notifications"], s_bg: ["تصاویر پس‌زمینه", "Background images"], s_on: ["روشن", "On"], s_off: ["خاموش", "Off"],
     s_acct: ["حساب کاربری", "Account"], s_app: ["دربارهٔ برنامه", "About the app"], s_ver: ["نسخهٔ وب‌اپ", "Web app version"], s_install: ["برای نصب: در مرورگر گزینهٔ «افزودن به صفحهٔ اصلی» را بزنید.", "To install: use “Add to Home screen” in your browser."], s_user: ["نام کاربری", "Username"],
     log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_base: ["پرش‌های قبل از ثبت در Manifest", "Before Manifest"], ls_rec: ["ثبت‌شده در Manifest", "Recorded in Manifest"], ls_jumps: ["پرش", "jumps"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
     rd_h: ["وضعیت مدارک", "Readiness"], rd_left: ["{d} روز مانده", "{d} days left"], rd_exp: ["منقضی شده", "Expired"], rd_none: ["ثبت نشده", "Not set"], rd_rep: ["ریپک رزرو (موعد بعدی)", "Reserve repack (next due)"],
@@ -439,6 +439,7 @@
     var w = String(full || "").trim().split(/\s+/); if (w.length < 2) return w[0] || "";
     return L === "fa" ? w.slice(1).join(" ") : w[0].charAt(0).toUpperCase() + ". " + w.slice(1).join(" ");
   }
+  function jtAb(v) { var k = String(v || "").trim(), m = { belly: "BF", tracking: "TRK", freefly: "FF", wingsuit: "WS", "canopy piloting": "CP", "canopy formation": "CF", "coach jump": "CJ", "camera flyer": "CAMERA", accuracy: "ACCURACY", tandem: "TM", "tandem student": "TM ST", solo: "SOLO" }; return m[k.toLowerCase()] || k; }
   function noCam(v) { return String(v === null || v === undefined ? "" : v).replace(/[\u{1F4F7}\u{1F4F8}\u{1F4F9}\u{1F3A5}\u{1F3A6}\u{1F4FD}\uFE0F]/gu, "").replace(/\s+/g, " ").trim(); }
   function licNo(v) { v = noCam(v); if (!v) return "—"; v = v.replace(/^\(?\s*[A-Za-z]{3,}\)?[\s:\-–]+/, "").replace(/^\(?\s*[A-Za-z]{3,}\)?\s+(?=[A-Za-z]-?\d)/, ""); return v || "—"; }
   function loadModal() {
@@ -449,7 +450,7 @@
     h += '<div class="pp-tbl"><div class="pp-r pp-h"><span>#</span><span>' + tx("p_name") + "</span><span>" + tx("g_lic") + "</span><span>" + tx("p_jt") + "</span><span>" + tx("p_det") + "</span><span>" + tx("log_alt") + "</span></div>";
     h += slots.length ? slots.map(function (s2, i) {
       var nm = shortName(L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa)), me = S.me && s2.u === S.me.uid;
-      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(noCam(s2.jt) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
+      return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(jtAb(noCam(s2.jt)) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
     }).join("") : '<div class="pp-none">' + tx("none_on") + "</div>";
     return h + "</div></div></div></div>";
   }
@@ -1115,7 +1116,7 @@
   function logStats(rows) {
     var yr = function (iso) { return L === "fa" ? g2j(+iso.slice(0, 4), +iso.slice(5, 7), +iso.slice(8, 10))[0] : +iso.slice(0, 4); }, ty = yr(todayTehran());
     var base = +((S.me && S.me.ext && S.me.ext.totalJumps) || 0) || 0, year = 0, mx = 0, last = "", types = {};
-    rows.forEach(function (r) { if (r.d) { if (yr(r.d) === ty) year++; if (!last || r.d > last) last = r.d; } if (+r.alt > mx) mx = +r.alt; var t = r.jt || "—"; types[t] = (types[t] || 0) + 1; });
+    rows.forEach(function (r) { if (r.d) { if (yr(r.d) === ty) year++; if (!last || r.d > last) last = r.d; } if (+r.alt > mx) mx = +r.alt; var t = jtAb(r.jt) || "—"; types[t] = (types[t] || 0) + 1; });
     var ago = last ? daysUntil(last) : null, tk = Object.keys(types).sort(function (a, b) { return types[b] - types[a]; }).slice(0, 5), top = tk.length ? types[tk[0]] : 1;
     var h = '<div class="card lstats"><div class="h2">' + tx("log_stats") + '</div><div class="lsg"><div><b>' + D(base + rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "—") + "</b><span>" + tx("ls_max") + " (ft)</span></div><div><b>" + (last ? dateTxt(last) : "—") + "</b><span>" + tx("ls_last") + (ago !== null && ago <= 0 ? " · " + fmt(tx("ls_ago"), { d: -ago }) : "") + "</span></div></div>";
     if (tk.length) { h += '<div class="h2" style="margin-top:12px">' + tx("ls_types") + "</div>"; tk.forEach(function (t) { h += '<div class="lbar"><span>' + esc(t) + '</span><div><i style="width:' + Math.round(types[t] * 100 / top) + '%"></i></div><b>' + D(types[t]) + "</b></div>"; }); }
@@ -1128,7 +1129,7 @@
     if (!rows.length) return '<div class="empty">' + tx("log_none") + "</div>";
     var h = logStats(rows) + '<div class="card logt"><div class="lr lh"><span>' + tx("log_date") + "</span><span>" + tx("log_load") + "</span><span>" + tx("log_ac") + "</span><span>" + tx("log_type") + "</span><span>" + tx("log_alt") + "</span></div>";
     var curD = "", perDay = {}; rows.forEach(function (r) { perDay[r.d] = (perDay[r.d] || 0) + 1; });
-    rows.forEach(function (r) { if (r.d !== curD) { curD = r.d; h += '<div class="lr ldh"><b>' + dateTxt(r.d) + "</b><span>" + D(perDay[r.d]) + " " + tx("ls_jumps") + "</span></div>"; } h += '<div class="lr"><span>' + dateTxt(r.d) + "</span><span>" + D(r.n) + '</span><span class="ltr">' + esc(r.ac || "—") + "</span><span>" + esc(r.jt || "—") + "</span><span>" + (r.alt ? D(r.alt) : "—") + "</span></div>"; });
+    rows.forEach(function (r) { if (r.d !== curD) { curD = r.d; h += '<div class="lr ldh"><b>' + dateTxt(r.d) + "</b><span>" + D(perDay[r.d]) + " " + tx("ls_jumps") + "</span></div>"; } h += '<div class="lr"><span>' + dateTxt(r.d) + "</span><span>" + D(r.n) + '</span><span class="ltr">' + esc(r.ac || "—") + "</span><span>" + esc(jtAb(r.jt) || "—") + "</span><span>" + (r.alt ? D(r.alt) : "—") + "</span></div>"; });
     return h + "</div>";
   }
   function folderBody(key) {
@@ -1252,7 +1253,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "37";
+  var APPV = "38";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
