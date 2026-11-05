@@ -214,3 +214,35 @@ body::before { display: none; }
 #bgs i::before { content: ""; position: absolute; inset: -40px; z-index: -1; background-image: inherit; background-size: cover; background-position: center; filter: blur(26px) brightness(.8); }
 #bgs i.on { opacity: 1; }
 #bgs::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,16,13,.5), rgba(10,16,13,.75)); }
+
+/* ===== v20: backgrounds — whole photo at the bottom, top/sides melt into the dark base, soft crossfade ===== */
+#bgs { position: fixed; inset: 0; z-index: -1; background: #0a100d; overflow: hidden; }
+#bgs i { position: absolute; inset: 0; background-size: contain; background-repeat: no-repeat; background-position: center bottom; overflow: visible; animation: none !important;
+  opacity: 0; transform: translateY(12px); transition: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.55) 22%, #000 48%), linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.55) 22%, #000 48%), linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  mask-composite: intersect; }
+#bgs i::before { display: none !important; content: none; }
+#bgs i.on { opacity: 1; transform: none; z-index: 2; transition: opacity 2.6s cubic-bezier(.4,0,.2,1), transform 2.8s cubic-bezier(.2,.7,.3,1); }
+#bgs i.lv { opacity: 1; transform: none; z-index: 1; transition: none; }
+#bgs::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, rgba(10,16,13,.12), rgba(10,16,13,.45)); }
+@media (prefers-reduced-motion: reduce) { #bgs i.on { transform: none; transition: opacity 1s ease; } }
+
+/* ===== v21: background photo sized to its own 16:9 box so ALL edges melt away; placed higher ===== */
+#bgs { background: linear-gradient(180deg, #0f1b14 0%, #0b140f 100%); }
+#bgs i { inset: auto; left: 50%; top: 9vh; width: min(100vw, 177.78vh); height: auto; aspect-ratio: 16 / 9; background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
+  transform: translateX(-50%) translateY(14px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.55) 17%, #000 32%, #000 64%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.18) 93%, transparent 100%), linear-gradient(to right, transparent 0%, rgba(0,0,0,.3) 6%, #000 17%, #000 83%, rgba(0,0,0,.3) 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.55) 17%, #000 32%, #000 64%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.18) 93%, transparent 100%), linear-gradient(to right, transparent 0%, rgba(0,0,0,.3) 6%, #000 17%, #000 83%, rgba(0,0,0,.3) 94%, transparent 100%);
+  mask-composite: intersect; }
+#bgs i.on { transform: translateX(-50%); }
+#bgs i.lv { transform: translateX(-50%); }
+#bgs::after { background: linear-gradient(180deg, rgba(10,16,13,0) 0%, rgba(10,16,13,.18) 100%); }
+@media (prefers-reduced-motion: reduce) { #bgs i.on { transform: translateX(-50%); } }
+
+/* ===== v22: photo edges melt into the page colour with plain gradients (works on every phone); photo placed higher ===== */
+#bgs { background: #0d1812; }
+#bgs i { top: 50vh; -webkit-mask-image: none; mask-image: none; }
+#bgs i::after { content: ""; position: absolute; inset: -1px; background: linear-gradient(to bottom, #0d1812 0%, rgba(13,24,18,.9) 5%, rgba(13,24,18,.6) 13%, rgba(13,24,18,.25) 24%, rgba(13,24,18,0) 38%, rgba(13,24,18,0) 62%, rgba(13,24,18,.3) 78%, rgba(13,24,18,.7) 90%, #0d1812 100%), linear-gradient(to right, #0d1812 0%, rgba(13,24,18,.85) 4%, rgba(13,24,18,.45) 10%, rgba(13,24,18,0) 22%, rgba(13,24,18,0) 78%, rgba(13,24,18,.45) 90%, rgba(13,24,18,.85) 96%, #0d1812 100%); pointer-events: none; }

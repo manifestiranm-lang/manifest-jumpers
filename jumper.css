@@ -511,3 +511,179 @@ body { min-height: 100dvh; }
 #bgs i { background-size: contain; background-repeat: no-repeat; background-position: center; transform: none; animation: none !important; overflow: hidden; }
 #bgs i::before { content: ""; position: absolute; inset: -40px; z-index: -1; background-image: inherit; background-size: cover; background-position: center; filter: blur(26px) brightness(.8); }
 #bgs i.on { animation: none; }
+
+/* ===== v20: backgrounds — whole photo at the bottom, top/sides melt into the dark base, soft crossfade ===== */
+#bgs { position: fixed; inset: 0; z-index: -1; background: #0a100d; overflow: hidden; }
+#bgs i { position: absolute; inset: 0; background-size: contain; background-repeat: no-repeat; background-position: center bottom; overflow: visible; animation: none !important;
+  opacity: 0; transform: translateY(12px); transition: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.55) 22%, #000 48%), linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.55) 22%, #000 48%), linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  mask-composite: intersect; }
+#bgs i::before { display: none !important; content: none; }
+#bgs i.on { opacity: 1; transform: none; z-index: 2; transition: opacity 2.6s cubic-bezier(.4,0,.2,1), transform 2.8s cubic-bezier(.2,.7,.3,1); }
+#bgs i.lv { opacity: 1; transform: none; z-index: 1; transition: none; }
+#bgs::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, rgba(10,16,13,.12), rgba(10,16,13,.45)); }
+@media (prefers-reduced-motion: reduce) { #bgs i.on { transform: none; transition: opacity 1s ease; } }
+
+/* ===== v20: bottom menu is part of the page flow and always sticks to the bottom (same on every tab) ===== */
+.shell { display: flex; flex-direction: column; padding-bottom: 0; }
+.shell > .page { flex: 1 0 auto; width: 100%; box-sizing: border-box; padding-bottom: 22px; }
+.tabs { position: sticky; bottom: 0; left: auto; right: auto; margin-top: auto; flex: 0 0 auto; width: 100%; }
+.shell:has(.compose) > .page { padding-bottom: 88px; }
+.shell:has(.fixbar) { padding-bottom: 0; }
+.shell:has(.fixbar) > .page { padding-bottom: 118px; }
+
+/* ===== v21: background photo sized to its own 16:9 box so ALL edges melt away; placed higher ===== */
+#bgs { background: linear-gradient(180deg, #0f1b14 0%, #0b140f 100%); }
+#bgs i { inset: auto; left: 50%; top: 9vh; width: min(100vw, 177.78vh); height: auto; aspect-ratio: 16 / 9; background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
+  transform: translateX(-50%) translateY(14px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.55) 17%, #000 32%, #000 64%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.18) 93%, transparent 100%), linear-gradient(to right, transparent 0%, rgba(0,0,0,.3) 6%, #000 17%, #000 83%, rgba(0,0,0,.3) 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.55) 17%, #000 32%, #000 64%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.18) 93%, transparent 100%), linear-gradient(to right, transparent 0%, rgba(0,0,0,.3) 6%, #000 17%, #000 83%, rgba(0,0,0,.3) 94%, transparent 100%);
+  mask-composite: intersect; }
+#bgs i.on { transform: translateX(-50%); }
+#bgs i.lv { transform: translateX(-50%); }
+#bgs::after { background: linear-gradient(180deg, rgba(10,16,13,0) 0%, rgba(10,16,13,.18) 100%); }
+@media (prefers-reduced-motion: reduce) { #bgs i.on { transform: translateX(-50%); } }
+
+/* ===== v21: fixed-size app frame — the bottom menu is always the bottom of the screen, on every tab ===== */
+.shell { position: fixed; inset: 0; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0 !important; }
+.shell > .top { position: relative; flex: 0 0 auto; }
+.shell > .page { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; width: 100%; max-width: none; margin: 0; box-sizing: border-box; padding: 14px max(14px, calc((100% - 760px) / 2 + 14px)) 24px; }
+.tabs { position: relative; flex: 0 0 auto; bottom: auto; margin-top: 0; width: 100%; }
+.shell:has(.compose) > .page { padding-bottom: 92px; }
+.shell:has(.fixbar) > .page { padding-bottom: 124px; }
+
+/* ===== v22: photo edges melt into the page colour with plain gradients (works on every phone); photo placed higher ===== */
+#bgs { background: #0d1812; }
+#bgs i { top: 50vh; -webkit-mask-image: none; mask-image: none; }
+#bgs i::after { content: ""; position: absolute; inset: -1px; background: linear-gradient(to bottom, #0d1812 0%, rgba(13,24,18,.9) 5%, rgba(13,24,18,.6) 13%, rgba(13,24,18,.25) 24%, rgba(13,24,18,0) 38%, rgba(13,24,18,0) 62%, rgba(13,24,18,.3) 78%, rgba(13,24,18,.7) 90%, #0d1812 100%), linear-gradient(to right, #0d1812 0%, rgba(13,24,18,.85) 4%, rgba(13,24,18,.45) 10%, rgba(13,24,18,0) 22%, rgba(13,24,18,0) 78%, rgba(13,24,18,.45) 90%, rgba(13,24,18,.85) 96%, #0d1812 100%); pointer-events: none; }
+
+/* ===== v22: app height follows the real visible screen height (set by script), so the menu is at the bottom from the very first moment ===== */
+.shell { height: var(--vh, 100dvh); bottom: auto; }
+
+/* ===== v27: cards a little see-through so the background photo shows behind them ===== */
+.card.c2, .card.wx4 { --panel: rgba(16,27,22,.5); }
+
+/* ===== v28: all cards a little see-through; load + weather cards a bit darker than before ===== */
+.shell .card, .shell .folder, .shell .note, .shell .crow, .shell .chathead { --panel: rgba(16,27,22,.6); }
+.shell .card.c2, .shell .card.wx4 { --panel: rgba(16,27,22,.7); }
+
+/* ===== v29: messenger — reply, forward, select, search, groups ===== */
+.thread .msg { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.thread .msg[data-sw="reply"]::after, .thread .msg[data-sw="fwd"]::after { position: absolute; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--orange); }
+.thread .msg[data-sw="reply"]::after { content: "↩"; right: -38px; }
+.thread .msg[data-sw="fwd"]::after { content: "↪"; left: -38px; }
+.quote { unicode-bidi: plaintext; border-inline-start: 3px solid var(--orange); background: rgba(0,0,0,.24); border-radius: 8px; padding: 4px 8px; margin-bottom: 5px; cursor: pointer; overflow: hidden; }
+.quote b { display: block; font-size: 12px; color: var(--orange); }
+.quote span { display: block; font-size: 13px; color: #cfd8cc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fwdl { font-size: 11.5px; color: var(--muted); font-style: italic; margin-bottom: 2px; }
+.thread .msg.sel { outline: 2px solid var(--orange); }
+.thread .msg.cur { outline: 2px solid var(--amber); }
+.thread .msg.flash { animation: flashmsg 1.4s ease-out; }
+@keyframes flashmsg { 0% { box-shadow: 0 0 0 4px rgba(242,201,76,.8); } 100% { box-shadow: 0 0 0 0 rgba(242,201,76,0); } }
+mark.hit { background: #f2c94c; color: #1b1205; border-radius: 3px; padding: 0 1px; }
+.thread.selecting .msg { padding-left: 38px; cursor: pointer; }
+.sck { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%; border: 2px solid #5b7664; display: grid; place-items: center; font-size: 13px; color: transparent; background: transparent; }
+.sck.on { background: var(--orange); border-color: var(--orange); color: #1b1205; }
+.thread .msg .sck { position: absolute; left: 8px; top: 8px; }
+.crow .sck { margin-inline-start: auto; }
+.crow.on { border-color: var(--orange); }
+.compose { flex-wrap: wrap; }
+.replybar { flex: 0 0 100%; order: -1; display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; background: #12201a; border-radius: 12px; border-inline-start: 4px solid var(--orange); }
+.replybar .rq { flex: 1; min-width: 0; unicode-bidi: plaintext; }
+.replybar .rq b { display: block; font-size: 12px; color: var(--orange); }
+.replybar .rq span { display: block; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.replybar .cbtn { width: 32px; height: 32px; font-size: 15px; }
+.shell:has(.replybar) > .page { padding-bottom: 150px; }
+.chathead .grow { flex: 1; }
+.selhead b { font-size: 16px; }
+.backb[disabled] { opacity: .35; }
+.ghd { display: flex; align-items: center; gap: 12px; background: none; border: 0; color: inherit; text-align: start; padding: 0; min-width: 0; }
+.searchbar { display: flex; gap: 6px; align-items: center; margin: -2px 0 10px; }
+.searchbar input { flex: 1; min-width: 0; height: 42px; padding: 0 12px; border-radius: 12px; border: 1px solid #34483a; background: #0b130e; color: var(--text); font-size: 16px; }
+.cqn { font-size: 12px; color: var(--muted); min-width: 46px; text-align: center; }
+.msheet { padding-top: 8px; }
+.msheet .mopt { display: flex; width: 100%; gap: 10px; align-items: center; padding: 14px 8px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--text); font-size: 16px; text-align: start; }
+.msheet .mopt:last-child { border-bottom: 0; }
+.mopt.danger { color: #ff9a8a; }
+.mprev { padding: 6px 8px 12px; color: var(--muted); font-size: 14px; max-height: 3.6em; overflow: hidden; unicode-bidi: plaintext; }
+.row2 { display: flex; gap: 10px; }
+.row2 .btn { flex: 1; }
+.av.gav { background: linear-gradient(135deg, #3a4d73, #26324d); border-color: #4a5f8c; }
+.btn.sm { padding: 6px 12px; min-height: 0; width: auto; font-size: 13px; }
+.btn.danger { background: #3a1512; border-color: #7a2a22; color: #ffb4a8; }
+.lsearch { margin: 6px 0 10px; }
+.modal .clist { max-height: 46vh; overflow: auto; }
+
+/* ===== v30: chat is a fixed column — head on top, messages scroll in the middle, the message box at the bottom (works with the keyboard) ===== */
+.shell { top: var(--vt, 0px); }
+.shell:has(.chatwrap) .tabs { display: none; }
+.shell:has(.chatwrap) > .page { display: flex; flex-direction: column; overflow: hidden !important; padding-bottom: 0 !important; padding-top: 8px; }
+.chatwrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.chatwrap .chathead { flex: 0 0 auto; margin-bottom: 8px; }
+.chatwrap .searchbar { flex: 0 0 auto; margin: 0 0 8px; }
+.chatwrap .thread { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; align-content: start; margin: 0; padding: 4px 30px 8px; scroll-behavior: auto; }
+.chatwrap #cmpw { flex: 0 0 auto; }
+.chatwrap .compose { position: static; max-width: none; margin: 0; left: auto; right: auto; bottom: auto; padding: 8px 0 calc(8px + var(--safe-b, 0px)); background: transparent; border-top: 1px solid var(--line); }
+.chatwrap .compose textarea { max-height: 120px; }
+.thread .msg[data-sw="reply"]::after { right: -30px; } .thread .msg[data-sw="fwd"]::after { left: -30px; }
+.thread.selecting .msg { padding-left: 38px; }
+.compose.selbar { display: flex; gap: 8px; }
+.sbtn { flex: 1; height: 46px; border-radius: 14px; border: 1px solid #34483a; background: #12201a; color: var(--text); font-size: 15px; font-weight: 600; }
+.sbtn.dng { color: #ff9a8a; border-color: #6a2a22; }
+.sbtn[disabled] { opacity: .35; }
+.shell:has(.replybar) > .page { padding-bottom: 0 !important; }
+
+/* ===== v31: bottom menu sits lower and is slimmer; app frame always fills the real screen ===== */
+.shell { height: auto; bottom: 0; }
+.shell:has(.chatwrap) { height: var(--vh, 100dvh); bottom: auto; }
+.tabs { height: calc(54px + var(--safe-b)); padding: 3px 6px max(3px, calc(var(--safe-b) - 14px)); }
+.tabs button { padding: 2px 2px; }
+.tabs button .ti { height: 26px; }
+.fab { bottom: calc(66px + var(--safe-b)); }
+.toast { bottom: calc(70px + var(--safe-b)); }
+
+/* ===== v32: clear back button, online/offline dot, iPhone frame ===== */
+.chathead .backpill { width: auto; height: 42px; padding: 0 14px 0 12px; gap: 6px; display: inline-flex; align-items: center; border-radius: 21px; border: 1.5px solid var(--orange); background: rgba(242,140,40,.16); color: #ffd7a8; font-size: 14.5px; font-weight: 700; }
+.chathead .backpill .barr { font-size: 22px; line-height: 1; }
+.chathead .backpill:active { background: rgba(242,140,40,.3); }
+.pst { display: inline-flex; align-items: center; gap: 6px; }
+.pdot { width: 9px; height: 9px; border-radius: 50%; background: #6b7a6f; display: inline-block; }
+.pdot.on { background: #4cd964; box-shadow: 0 0 0 3px rgba(76,217,100,.22); }
+html { background-color: #0a100d; }
+body { background: transparent; }
+@supports (-webkit-touch-callout: none) {
+  .shell { position: fixed; top: var(--vt, 0px); left: 0; right: 0; bottom: 0; height: auto; }
+  .shell:has(.chatwrap) { bottom: auto; height: var(--vh, 100%); }
+  .tabs { padding-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 10px)); height: auto; min-height: 54px; }
+}
+
+/* ===== v34 ===== */
+.c2.st-open { --cc1: rgba(17,81,147,.55); --cc2: rgba(10,40,80,.35); --ca: #3b8cf0; }
+.c2.st-load { --cc1: rgba(13,92,99,.6); --cc2: rgba(8,50,56,.38); --ca: #2ec4b6; }
+.c2.st-ready { --cc1: rgba(110,84,16,.6); --cc2: rgba(70,52,10,.38); --ca: #f2c94c; }
+.c2.st-board { --cc1: rgba(155,89,26,.62); --cc2: rgba(95,52,12,.4); --ca: #f58f2a; }
+.c2.st-hold { --cc1: rgba(74,42,122,.62); --cc2: rgba(45,25,78,.4); --ca: #a77cf0; }
+.c2.st-done { --cc1: rgba(30,100,55,.45); --cc2: rgba(15,60,32,.3); --ca: #4cc46a; }
+.c2.st-canc { --cc1: rgba(150,40,40,.5); --cc2: rgba(70,18,18,.35); --ca: #ff6b6b; }
+@keyframes glowp { 0%,100% { box-shadow: 0 0 0 0 rgba(245,143,42,0); } 50% { box-shadow: 0 0 16px 2px rgba(245,143,42,.4); } }
+.c2-cd { position: absolute; top: 36px; inset-inline-end: 12px; z-index: 1; }
+.c2-cd.hold { color: #a77cf0; }
+.c2-t { padding-inline-end: 0; }
+.stampwrap { display: grid; place-items: center; margin: 10px 0 14px; perspective: 600px; overflow: hidden; }
+.stamp { display: grid; text-align: center; padding: 8px 26px; border: 4px solid #e0554a; border-radius: 12px; color: #e0554a; transform: rotate(-9deg); background: rgba(224,85,74,.08); box-shadow: inset 0 0 0 2px rgba(224,85,74,.35); animation: stampin .7s cubic-bezier(.2,1.2,.3,1) both; }
+.stamp b { font-size: 34px; letter-spacing: 3px; font-weight: 900; line-height: 1.2; }
+.stamp small { font-size: 11px; letter-spacing: 2px; font-weight: 700; }
+.stamp.still { animation: none; }
+@keyframes stampin { 0% { opacity: 0; transform: rotate(-9deg) scale(3.2); } 60% { opacity: 1; transform: rotate(-9deg) scale(.92); } 80% { transform: rotate(-9deg) scale(1.04); } 100% { opacity: 1; transform: rotate(-9deg) scale(1); } }
+.selall { margin-inline-start: auto; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+.h2row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.linkb { background: none; border: 0; color: #ff8a7a; font-size: 12.5px; font-weight: 700; padding: 4px 6px; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.c2-cd { inset-inline-end: auto; right: auto; left: auto; }
+html[dir=rtl] .c2-cd { left: 14px; }
+html[dir=ltr] .c2-cd { right: 14px; }
+.logt .lr.ldh { grid-template-columns: 1fr auto; background: rgba(255,255,255,.06); border-radius: 8px; padding: 6px 10px; margin-top: 6px; font-size: 13px; }
+.logt .lr.ldh span { justify-self: end; color: #cfe0d6; }

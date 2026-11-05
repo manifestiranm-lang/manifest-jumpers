@@ -3,6 +3,7 @@
   "use strict";
   var CFG = window.REG_CONFIG;
   var $app = document.getElementById("app");
+  var VAPID = "BEX0-dBPiLfKJY0OfSjTi7OH2_0dLM6mti1VtiP8U0Pq20RvYALIJqGH9QoH_ymInGDPtV0EBrjIbs2_4ei0W9w";
   var LSK = { lang: "mj_lang", sess: "mj_session", notes: "mj_notes", prev: "mj_prev", fired: "mj_fired", seenMsg: "mj_seen_msg", tab: "mj_tab" };
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
@@ -10,7 +11,7 @@
   function loadSess() { try { var v = localStorage.getItem("mj_session") || sessionStorage.getItem("mj_session"); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function saveSess(sess, remember) { try { localStorage.removeItem("mj_session"); sessionStorage.removeItem("mj_session"); (remember ? localStorage : sessionStorage).setItem("mj_session", JSON.stringify(sess)); } catch (e) { /* storage blocked */ } }
   var L = lsGet(LSK.lang, "fa") === "en" ? "en" : "fa";
-  var S = { sess: loadSess(), tab: (function (t) { return t === "alerts" || !/^(loads|msgs|log|me|set)$/.test(t) ? "loads" : t; })(lsGet(LSK.tab, "loads")), view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: true, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {} };
+  var S = { sess: loadSess(), tab: "loads", view: "", me: null, loads: null, msgs: [], dm: [], peers: [], peer: "", pq: "", anim: true, popAfter: 0, notes: lsGet(LSK.notes, []), photo: "", busy: false, err: "", toast: "", loadedAt: 0, expanded: {}, grp: [], gm: {}, pres: {}, pgs: "", rep: null, selmode: false, ss: {}, menu: 0, fw: null, cq: "", lq: "", sr: false, sidx: 0, gnew: null, gadd: null, gi: false, dlg: null, nm: false, stick: false, noscroll: false };
 
   /* ---------- texts ---------- */
   var TX = {
@@ -74,7 +75,7 @@
   Object.assign(TX, {
     s_lang: ["زبان", "Language"], s_notif: ["اعلان‌ها", "Notifications"], s_bg: ["پس‌زمینهٔ تصاویر تخت جمشید", "Persepolis photo background"], s_on: ["روشن", "On"], s_off: ["خاموش", "Off"],
     s_acct: ["حساب کاربری", "Account"], s_app: ["دربارهٔ برنامه", "About the app"], s_ver: ["نسخهٔ وب‌اپ", "Web app version"], s_install: ["برای نصب: در مرورگر گزینهٔ «افزودن به صفحهٔ اصلی» را بزنید.", "To install: use “Add to Home screen” in your browser."], s_user: ["نام کاربری", "Username"],
-    log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
+    log_stats: ["آمار لاگ‌بوک", "Logbook statistics"], ls_base: ["پرش‌های قبل از ثبت در Manifest", "Before Manifest"], ls_rec: ["ثبت‌شده در Manifest", "Recorded in Manifest"], ls_jumps: ["پرش", "jumps"], ls_total: ["کل پرش‌ها", "Total jumps"], ls_year: ["پرش‌های امسال", "This year"], ls_last: ["آخرین پرش", "Last jump"], ls_max: ["بیشترین ارتفاع", "Max altitude"], ls_types: ["بر اساس نوع پرش", "By jump type"], ls_ago: ["{d} روز پیش", "{d} days ago"],
     rd_h: ["وضعیت مدارک", "Readiness"], rd_left: ["{d} روز مانده", "{d} days left"], rd_exp: ["منقضی شده", "Expired"], rd_none: ["ثبت نشده", "Not set"], rd_rep: ["ریپک رزرو (موعد بعدی)", "Reserve repack (next due)"],
     pickDate: ["انتخاب تاریخ", "Pick a date"], cal_clear: ["پاک کردن", "Clear"], p_jt: ["نوع", "Type"], dp_d: ["روز", "Day"], dp_m: ["ماه", "Month"], dp_y: ["سال", "Year"], close: ["بستن", "Close"]
   });
@@ -124,14 +125,86 @@
   /* ---------- notifications ---------- */
   function saveNotes() { S.notes = S.notes.slice(0, 60); lsSet(LSK.notes, S.notes); }
   function unreadNotes() { return S.notes.filter(function (n) { return !n.read; }).length; }
-  function unreadMsgs() { return S.msgs.filter(function (m) { return m.staff && !m.read; }).length + S.dm.filter(function (m) { return !m.mine && !m.read; }).length; }
+  function unreadMsgs() { var g = 0; S.grp.forEach(function (x) { g += x.unread || 0; }); return S.msgs.filter(function (m) { return m.staff && !m.read; }).length + S.dm.filter(function (m) { return !m.mine && !m.read; }).length + g; }
   function unreadStaff() { return S.msgs.filter(function (m) { return m.staff && !m.read; }).length; }
   function unreadPeer(id) { return S.dm.filter(function (m) { return m.peer === id && !m.mine && !m.read; }).length; }
+  function pushActive() { return !!lsGet("mj_push", false) && typeof Notification !== "undefined" && Notification.permission === "granted"; }
+  var AC = null;
+  /* spoken call for the jumper's OWN load only (same wording as the desktop manifest: 20 / 15 / 10 minutes) */
+  var VA = null, VQ = Promise.resolve();
+  var SIL = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="; function vUnlock() { try { if (!VA) { VA = new Audio(); VA.preload = "auto"; } VA.src = SIL; var pr = VA.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) { /* ignore */ } }
+  ["touchstart", "pointerdown", "click", "keydown"].forEach(function (n) { document.addEventListener(n, function f() { vUnlock(); document.removeEventListener(n, f, true); }, true); });
+  function playClip(name) {
+    return new Promise(function (res) {
+      try {
+        if (!VA) VA = new Audio(); var a = VA, done = false;
+        var fin = function (ok) { if (done) return; done = true; clearTimeout(to); a.onended = a.onerror = null; res(ok); };
+        var to = setTimeout(function () { fin(true); }, 30000);
+        a.onended = function () { fin(true); }; a.onerror = function () { fin(false); };
+        a.src = "voice/" + name + ".mp3"; a.volume = 1; var pr = a.play(); if (pr && pr.catch) pr.catch(function () { fin(false); });
+      } catch (e) { res(false); }
+    });
+  }
+  function ttsFallback(n, m) {
+    if (!("speechSynthesis" in window)) return;
+    try {
+      var vs = window.speechSynthesis.getVoices() || [], fa = null;
+      for (var i = 0; i < vs.length; i++) if (/^fa/i.test(vs[i].lang)) { fa = vs[i]; break; }
+      var txt = fa ? "لود " + n + "، " + m + " دقیقه تا پرواز." + (m === 10 ? " لطفاً به محوطهٔ سوارشدن بروید." : "") : m + " minutes call for load " + n + "." + (m === 10 ? " Please proceed to the boarding area." : "");
+      var u = new SpeechSynthesisUtterance(txt); u.lang = fa ? fa.lang : "en-US"; if (fa) u.voice = fa; u.rate = 0.95; u.volume = 1;
+      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+    } catch (e) { /* no speech */ }
+  }
+  /* the SAME recordings the desktop Manifest plays: Persian first, then English */
+  function speakClips(names, fallback) {
+    if (!lsGet("mj_snd", true)) return;
+    VQ = VQ.then(function () {
+      return playClip(names[0]).then(function (ok) {
+        if (!ok) { if (fallback) fallback(); return; }
+        return new Promise(function (r) { setTimeout(r, 500); }).then(function () { return playClip(names[1]); });
+      });
+    }).catch(function () {});
+  }
+  function speakCall(n, m) { speakClips(["load-" + n + "-" + m, "load-" + n + "-" + m + "-en"], function () { ttsFallback(n, m); }); }
+  function speakStandby() { speakClips(["standby", "standby-en"], null); }
+  function beep() {
+    if (!lsGet("mj_snd", true) || document.hidden) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
+      var t = AC.currentTime; [[880, 0], [1175, 0.16]].forEach(function (p) { var o = AC.createOscillator(), g = AC.createGain(); o.type = "sine"; o.frequency.value = p[0]; g.gain.setValueAtTime(0.0001, t + p[1]); g.gain.exponentialRampToValueAtTime(0.25, t + p[1] + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + p[1] + 0.22); o.connect(g); g.connect(AC.destination); o.start(t + p[1]); o.stop(t + p[1] + 0.25); });
+    } catch (e) { /* no sound */ }
+  }
+  function b64ToU8(b) { var p = "=".repeat((4 - b.length % 4) % 4), r = atob((b + p).replace(/-/g, "+").replace(/_/g, "/")), o = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i); return o; }
+  function idbPut(rec) {
+    try { var rq = indexedDB.open("mj", 1); rq.onupgradeneeded = function () { rq.result.createObjectStore("kv"); }; rq.onsuccess = function () { try { var tx2 = rq.result.transaction("kv", "readwrite"); if (rec) tx2.objectStore("kv").put(rec, "cfg"); else tx2.objectStore("kv").delete("cfg"); } catch (e) { /* ignore */ } }; } catch (e2) { /* ignore */ }
+  }
+  function pushSync() {
+    if (!S.sess || !pushActive() || !("serviceWorker" in navigator)) return Promise.resolve(false);
+    return navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) {
+      if (!sub) return false;
+      idbPut({ url: CFG.url, key: CFG.key, token: S.sess.token });
+      return authed("jumper_push_save", { p_endpoint: sub.endpoint }).then(function () { return true; });
+    }).catch(function () { return false; });
+  }
+  function pushOn() {
+    if (typeof Notification === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) { toast(tx("push_unsup")); return; }
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== "granted") { toast(tx("push_denied")); render(); return; }
+      return navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription().then(function (sub) { return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID) }); }); }).then(function () { lsSet("mj_push", true); return pushSync(); }).then(function (ok) { if (!ok) { lsSet("mj_push", false); toast(tx("fail")); } else { beep(); toast(tx("push_ok")); } render(); });
+    }).catch(function () { lsSet("mj_push", false); toast(tx("fail")); render(); });
+  }
+  function pushOff() {
+    lsSet("mj_push", false);
+    if ("serviceWorker" in navigator) navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) { if (sub) { var ep = sub.endpoint; return sub.unsubscribe().then(function () { if (S.sess) return authed("jumper_push_del", { p_endpoint: ep }); }); } }).catch(function () {});
+    idbPut(null); render();
+  }
   function addNote(id, key, vars, icon) {
     if (S.notes.some(function (n) { return n.id === id; })) return;
     S.notes.unshift({ id: id, key: key, vars: vars || {}, icon: icon || "🔔", at: Date.now(), read: false });
     saveNotes();
-    if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
+    beep();
+    if (key === "n_call" && vars) setTimeout(function () { speakCall(vars.n, vars.m); }, 700);
+    if (!pushActive() && typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
       var body = fmt(tx(key), vars || {});
       try { if (navigator.serviceWorker && navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(function (reg) { reg.showNotification("Manifest", { body: body, icon: "icon-192.png", badge: "icon-192.png", tag: id }); }); else new Notification("Manifest", { body: body, icon: "icon-192.png" }); } catch (e) { /* ignore */ }
     }
@@ -186,44 +259,85 @@
 
   /* ---------- data refresh ---------- */
   var timers = [];
-  function refreshLoads() { return authed("jumper_loads").then(function (d) { S.loads = d || []; S.loadedAt = Date.now(); detectEvents(); }).catch(function () {}); }
+  function normLoads(days) {
+    days.forEach(function (day) { (day.loads || []).forEach(function (l) {
+      if (l.st0 === undefined) l.st0 = l.st;
+      if (l.st !== "Completed" && l.st !== "Cancelled") { if (l.cs === "Hold") l.st = "Hold"; else if (l.st === "Preparation Complete") l.st = "Loading"; }
+    }); });
+    return days;
+  }
+  function isStandby(todays) {
+    var act = todays.filter(function (x) { return x.l.st !== "Completed" && x.l.st !== "Cancelled"; });
+    return act.length > 0 && act.every(function (x) { return x.l.cs === "Hold"; });
+  }
+  function refreshLoads() { return authed("jumper_loads").then(function (d) { var wasSb = S.sbOn; S.loads = normLoads(d || []); S.loadedAt = Date.now(); var nowSb = isStandby(loadsFlat().filter(function (x) { return x.date === todayTehran(); })); if (nowSb && wasSb === false) speakStandby(); S.sbOn = nowSb; detectEvents(); }).catch(function () {}); }
   function refreshMe() { return authed("jumper_me").then(function (d) { var sig = JSON.stringify(d), changed = sig !== S.meSig; S.meSig = sig; S.me = d; detectExpiry(); if (d && d.found && d.hasPhoto && !S.photo) { authed("jumper_photo").then(function (p) { S.photo = p || ""; render(); }).catch(function () {}); } return changed; }).catch(function () { return false; }); }
-  function refreshMsgs() { return authed("jumper_messages_list").then(function (d) { S.msgs = d || []; detectMessages(); if (S.tab === "msgs" && S.peer === "staff" && !document.hidden && unreadStaff() > 0) { authed("jumper_mark_read").then(function () { S.msgs.forEach(function (m) { if (m.staff) m.read = true; }); updateBadges(); }).catch(function () {}); } }).catch(function () {}); }
+  function refreshMsgs() { return authed("jumper_messages_list2").then(function (d) { S.msgs = d || []; detectMessages(); if (S.tab === "msgs" && S.peer === "staff" && !document.hidden && unreadStaff() > 0) { authed("jumper_mark_read").then(function () { S.msgs.forEach(function (m) { if (m.staff) m.read = true; }); updateBadges(); }).catch(function () {}); } }).catch(function () {}); }
 
   function refreshDm() {
-    return authed("jumper_dm_list").then(function (d) {
+    return authed("jumper_dm_list2").then(function (d) {
       S.dm = d || []; var seen = lsGet("mj_seen_dm", 0), max = seen;
       S.dm.forEach(function (m) { if (!m.mine && m.id > seen) addNote("dm-" + m.id, "n_dm", {}, "💬"); if (m.id > max) max = m.id; });
       if (!(seen === 0 && S.dm.length === 0)) lsSet("mj_seen_dm", max);
-      if (S.tab === "msgs" && S.peer && S.peer !== "staff" && S.peer !== "pick" && !document.hidden && unreadPeer(S.peer) > 0) { var pr = S.peer; authed("jumper_dm_read", { p_peer: pr }).then(function () { S.dm.forEach(function (m) { if (m.peer === pr && !m.mine) m.read = true; }); updateBadges(); }).catch(function () {}); }
+      if (S.tab === "msgs" && isDm() && !document.hidden && unreadPeer(S.peer) > 0) { var pr = S.peer; authed("jumper_dm_read", { p_peer: pr }).then(function () { S.dm.forEach(function (m) { if (m.peer === pr && !m.mine) m.read = true; }); updateBadges(); }).catch(function () {}); }
     }).catch(function () {});
   }
   function refreshPeers() { return authed("jumper_people").then(function (d) { S.peers = d || []; }).catch(function () {}); }
   function peerName(id) { for (var i = 0; i < S.peers.length; i++) if (S.peers[i].id === id) { var p = S.peers[i]; return (L === "fa" ? p.fa || p.en : p.en || p.fa) || "—"; } return "—"; }
   function initials(n) { var w = String(n).split(/\s+/).filter(Boolean); return ((w[0] || "?").charAt(0) + (w[1] ? w[1].charAt(0) : "")).toUpperCase(); }
+  /* groups */
+  function gid() { return /^g:/.test(S.peer) ? +S.peer.slice(2) : 0; }
+  function isGrp() { return !!gid(); }
+  function isDm() { return !!S.peer && S.peer !== "staff" && S.peer !== "pick" && S.peer !== "gnew" && !isGrp(); }
+  function chatOpen() { return !!S.peer && S.peer !== "pick" && S.peer !== "gnew"; }
+  function grpById(id) { for (var i = 0; i < S.grp.length; i++) if (S.grp[i].id === id) return S.grp[i]; return null; }
+  function presTxt(on) { return '<span class="pdot' + (on ? " on" : "") + '"></span>' + tx(on ? "on_l" : "off_l"); }
+  function presPeer() { return S.peer === "staff" ? "staff" : isDm() ? S.peer : ""; }
+  function presRefresh() {
+    var pr = presPeer(); if (!pr || document.hidden || !S.sess) return;
+    authed("jumper_presence_get", { p_peer: pr }).then(function (r) { S.pres[pr] = !!(r && r.on); var el = document.getElementById("pst"); if (el && presPeer() === pr) el.innerHTML = presTxt(S.pres[pr]); }).catch(function () {});
+  }
+  function presBeat() { if (S.sess && !document.hidden) authed("jumper_presence_beat").catch(function () {}); }
+  function refreshGroups() {
+    return authed("jumper_group_list").then(function (d) {
+      S.grp = d || [];
+      if (S.tab === "msgs" && isGrp() && !document.hidden) { var g = grpById(gid()); if (g && g.unread > 0) { var gi = g.id; authed("jumper_group_read", { p_gid: gi }).then(function () { var gg = grpById(gi); if (gg) gg.unread = 0; updateBadges(); }).catch(function () {}); } }
+    }).catch(function () {});
+  }
+  function refreshGroupMsgs(id) { return authed("jumper_group_msgs", { p_gid: id }).then(function (d) { S.gm[id] = d || []; }).catch(function () {}); }
   var dmPinging = false;
   function dmPing() {
     if (dmPinging || document.hidden || !S.sess) return; dmPinging = true;
     authed("jumper_dm_ping").then(function (r) { dmPinging = false; if (!r) return; var sig = r.id + ":" + r.rd; if (sig !== S.pd) { S.pd = sig; refreshDm().then(softRender); } }).catch(function () { dmPinging = false; });
+    authed("jumper_group_ping").then(function (r) { if (!r) return; var sig = r.id + ":" + r.n + ":" + r.mm; if (sig !== S.pgs) { S.pgs = sig; var ps = [refreshGroups()]; if (isGrp()) ps.push(refreshGroupMsgs(gid())); Promise.all(ps).then(softRender); } }).catch(function () {});
   }
-  function isDm() { return S.peer && S.peer !== "staff" && S.peer !== "pick"; }
   function curMsgs() {
-    if (!isDm()) return S.msgs;
-    return S.dm.filter(function (m) { return m.peer === S.peer; }).map(function (m) { return { id: m.id + 1000000000, staff: !m.mine, body: m.body, attach: m.attach, at: m.at, read: m.read, seen: m.read, name: "" }; });
+    if (isGrp()) return (S.gm[gid()] || []).map(function (m) { return { id: m.id + 2000000000, rid: m.id, staff: !m.mine, body: m.body, attach: m.attach, at: m.at, who: m.u, rp: m.rp, fwd: m.fwd, kind: m.kind }; });
+    if (!isDm()) return S.msgs.map(function (m) { return { id: m.id, rid: m.id, staff: m.staff, body: m.body, attach: m.attach, at: m.at, read: m.read, seen: m.seen, name: m.name, rp: m.rp, fwd: m.fwd }; });
+    return S.dm.filter(function (m) { return m.peer === S.peer; }).map(function (m) { return { id: m.id + 1000000000, rid: m.id, staff: !m.mine, body: m.body, attach: m.attach, at: m.at, read: m.read, seen: m.read, name: "", rp: m.rp, fwd: m.fwd }; });
+  }
+  function msgByKey(k) { var cm = curMsgs(); for (var i = 0; i < cm.length; i++) if (cm[i].id === k) return cm[i]; return null; }
+  function sendTo(target, body, attach, rp, fwd) {
+    var a = { p_body: body || "", p_attach: attach || null, p_reply: rp || null, p_fwd: !!fwd };
+    if (target === "staff") return authed("jumper_send2", a).then(function () { return refreshMsgs(); });
+    if (/^g:/.test(target)) { a.p_gid = +target.slice(2); return authed("jumper_group_send", a).then(function () { return Promise.all([refreshGroupMsgs(a.p_gid), refreshGroups()]); }); }
+    a.p_peer = target; return authed("jumper_dm_send2", a).then(function () { return refreshDm(); });
   }
   function chatPost(body, attach) {
-    if (!isDm()) return sendMsg(body, attach);
-    return authed("jumper_dm_send", { p_peer: S.peer, p_body: body, p_attach: attach || null }).then(function () { return refreshDm(); }).then(function () { render(); });
+    var rp = S.rep ? S.rep.rid : null;
+    return sendTo(S.peer, body, attach, rp, false).then(function () { S.rep = null; S.stick = true; render(); });
   }
   function openChat(p) {
-    S.peer = p; S.anim = true; S.sel = 0; S.popAfter = 0;
+    S.peer = p; S.nm = false; S.anim = true; S.sel = 0; S.popAfter = 0; S.rep = null; S.selmode = false; S.ss = {}; S.menu = 0; S.cq = ""; S.sr = false; S.gi = false; S.gadd = null; S.gnew = p === "gnew" ? { name: "", sel: {}, q: "" } : null; S.stick = true;
     var cm = curMsgs(); S.popAfter = cm.length ? cm[cm.length - 1].id : 0;
     if (p === "staff") authed("jumper_mark_read").then(function () { S.msgs.forEach(function (m) { m.read = true; }); updateBadges(); }).catch(function () {});
-    else if (p !== "pick" && p) authed("jumper_dm_read", { p_peer: p }).then(function () { S.dm.forEach(function (m) { if (m.peer === p && !m.mine) m.read = true; }); updateBadges(); }).catch(function () {});
-    render(); window.scrollTo(0, 0);
-    if (p === "pick") refreshPeers().then(function () { var l = document.getElementById("plist"); if (l) l.innerHTML = pickList(); });
+    else if (isGrp()) { var g0 = +p.slice(2); refreshGroupMsgs(g0).then(function () { var c2 = curMsgs(); S.popAfter = c2.length ? c2[c2.length - 1].id : 0; if (S.peer === p) { S.stick = true; render(); } authed("jumper_group_read", { p_gid: g0 }).then(function () { var gg = grpById(g0); if (gg) gg.unread = 0; updateBadges(); }).catch(function () {}); }); }
+    else if (p !== "pick" && p !== "gnew" && p) authed("jumper_dm_read", { p_peer: p }).then(function () { S.dm.forEach(function (m) { if (m.peer === p && !m.mine) m.read = true; }); updateBadges(); }).catch(function () {});
+    render(); toTop();
+    presRefresh();
+    if (p === "pick" || p === "gnew") refreshPeers().then(function () { var l = document.getElementById("plist"); if (l) l.innerHTML = p === "gnew" ? gpickList() : pickList(); });
   }
-  function refreshAll() { return Promise.all([refreshMe(), refreshLoads(), refreshMsgs(), refreshDm(), refreshPeers()]).then(function () { render(); }); }
+  function refreshAll() { return Promise.all([refreshMe(), refreshLoads(), refreshMsgs(), refreshDm(), refreshPeers(), refreshGroups()]).then(function () { render(); }); }
   var pinging = false;
   function ping() {
     if (document.hidden || !S.sess || pinging) return; pinging = true;
@@ -237,24 +351,26 @@
   }
   function startPolling() {
     stopPolling();
+    pushSync(); presBeat(); presRefresh();
+    timers.push(setInterval(presBeat, 30000)); timers.push(setInterval(presRefresh, 12000));
     timers.push(setInterval(ping, 3000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess) refreshMe().then(function (ch) { if (ch) softRender(); }); }, 30000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess) loadWeather().then(softRender); }, 600000));
-    timers.push(setInterval(function () { if (!document.hidden && S.sess && S.view === "f_log") refreshLog().then(function (ch) { if (ch) softRender(); }); }, 60000));
+    timers.push(setInterval(function () { if (!document.hidden && S.sess && (S.view === "f_log" || S.tab === "log")) refreshLog().then(function (ch) { if (ch) softRender(); }); }, 60000));
     timers.push(setInterval(tickCountdowns, 1000));
     loadWeather().then(softRender);
   }
   function stopPolling() { timers.forEach(clearInterval); timers = []; }
   document.addEventListener("visibilitychange", function () { if (!document.hidden && S.sess) refreshAll(); });
-  var lastScroll = 0, srT = 0; window.addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true });
+  var lastScroll = 0, srT = 0; document.addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true, capture: true });
   function softRender() { if (Date.now() - lastScroll < 350) { clearTimeout(srT); srT = setTimeout(softRender, 380); return; } if (S.tab === "msgs" && S.sess && document.getElementById("thr")) { updateThread(); updateBadges(); return; } var a = document.activeElement; if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT" || a.tagName === "SELECT")) { updateBadges(); return; } render(); }
   function tickCountdowns() { var els = document.querySelectorAll("[data-end]"); for (var i = 0; i < els.length; i++) { var end = +els[i].getAttribute("data-end"); els[i].textContent = mmss((end - Date.now()) / 1000); } detectEvents(); }
   function updateBadges() { var b = document.querySelectorAll(".badge[data-b]"); for (var i = 0; i < b.length; i++) { var k = b[i].getAttribute("data-b"); var n = k === "alerts" ? unreadNotes() : unreadMsgs(); b[i].textContent = D(n); b[i].style.display = n ? "" : "none"; } }
 
   /* ---------- actions ---------- */
   function setLang(l) { L = l; lsSet(LSK.lang, l); document.documentElement.lang = l; document.documentElement.dir = l === "fa" ? "rtl" : "ltr"; render(); }
-  function toast(t) { S.toast = t; render(); setTimeout(function () { if (S.toast === t) { S.toast = ""; render(); } }, 3200); }
-  function signOut(silent) { if (S.sess && !silent) rpc("jumper_logout", { p_token: S.sess.token }).catch(function () {}); S.sess = null; S.me = null; S.loads = null; S.msgs = []; S.dm = []; S.peers = []; S.peer = ""; S.pd = undefined; S.photo = ""; S.view = ""; S.edit = null; S.modal = ""; S.sos = null; S.log = null; S.logSig = ""; S.meSig = ""; S.pf = S.pm = S.ps = S.pg = undefined; S.pend = []; S.sel = 0; S.img = ""; try { localStorage.removeItem(LSK.sess); sessionStorage.removeItem(LSK.sess); } catch (e) { /* ignore */ } stopPolling(); render(); }
+  function toast(t) { S.toast = t; S.noscroll = true; render(); setTimeout(function () { if (S.toast === t) { S.toast = ""; S.noscroll = true; render(); } }, 3200); }
+  function signOut(silent) { if (S.sess && !silent) { var tk0 = S.sess.token; try { if ("serviceWorker" in navigator) navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) { if (sub) rpc("jumper_push_del", { p_token: tk0, p_endpoint: sub.endpoint }); }).catch(function () {}); } catch (e0) { /* ignore */ } } idbPut(null); if (S.sess && !silent) rpc("jumper_logout", { p_token: S.sess.token }).catch(function () {}); S.sess = null; S.me = null; S.loads = null; S.msgs = []; S.dm = []; S.peers = []; S.peer = ""; S.pd = undefined; S.photo = ""; S.view = ""; S.edit = null; S.modal = ""; S.sos = null; S.log = null; S.logSig = ""; S.meSig = ""; S.pf = S.pm = S.ps = S.pg = undefined; S.pend = []; S.sel = 0; S.img = ""; try { localStorage.removeItem(LSK.sess); sessionStorage.removeItem(LSK.sess); } catch (e) { /* ignore */ } stopPolling(); render(); }
   function doLogin(u, p, remember) {
     S.err = ""; if (!u || !p) { S.err = tx("fill"); return render(); }
     S.busy = true; render();
@@ -263,7 +379,7 @@
       S.sess = { token: r.token, username: r.username }; if (r.must_change) { S.sess.mustChange = true; S.tempOld = p; S.tab = "me"; S.view = "f_pw"; } saveSess(S.sess, remember); S.busy = false; if (!S.sess.mustChange) S.tab = "loads"; localStorage.removeItem(LSK.prev); render(); refreshAll().then(startPolling);
     }).catch(function (e) { S.busy = false; var c = (e.code || "").replace(/^.*?(bad_login|locked|pending|net).*$/, "$1"); S.err = tx(["bad_login", "locked", "pending", "net"].indexOf(c) >= 0 ? c : "fail"); render(); });
   }
-  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; if (t === "log") refreshLog().then(function () { if (S.tab === "log") render(); }); S.anim = true; render(); window.scrollTo(0, 0); }
+  function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; if (t === "log") refreshLog().then(function () { if (S.tab === "log") render(); }); S.anim = true; render(); toTop(); }
   function sendMsg(body, attach) {
     return authed("jumper_send", { p_body: body, p_attach: attach || null }).then(function () { return refreshMsgs(); }).then(function () { render(); });
   }
@@ -312,9 +428,10 @@
     var showChip = /^(Boarding|Hold|Completed|Cancelled|Ready|Preparation Complete)$/.test(l.st || "");
     var dots = ""; if (cap && cap <= 24) { for (var i = 0; i < cap; i++) dots += '<i class="' + (i < slots.length ? "f" : "") + '"></i>'; } else dots = '<span class="sbar"><i style="width:' + (cap ? Math.min(100, Math.round(slots.length * 100 / cap)) : 0) + '%"></i></span>';
     var h = '<div class="card ld c2 st-' + cls + (mine ? " mine" : "") + '" data-act="openload" data-key="' + esc(key) + '"><div class="c2-n"><small>' + tx("load") + "</small><b>" + D(l.n) + '</b></div><span class="c2-st">' + esc((TX.st[l.st] || [l.st, l.st])[L === "fa" ? 0 : 1]) + '</span><div class="c2-b"><div class="c2-t"><span class="c2-ty">' + esc(l.type || l.ac || "—") + "</span>" + (l.type && l.ac ? '<small class="c2-sn ltr">' + esc(l.ac) + "</small>" : "") + (mine ? '<span class="chip me">★ ' + tx("you") + "</span>" : "") + "";
-    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
-    else if (l.cs === "Hold" && l.rem) h += '<span class="count sm">' + mmss(l.rem) + "</span>";
-    h += '</div><div class="c2-m">' + [l.alt ? '<span dir="ltr">' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
+    h += '</div>';
+    if (l.cs === "Running" && l.end && remaining(l) > 0) h += '<span class="count sm c2-cd" data-end="' + l.end + '">' + mmss(remaining(l)) + "</span>";
+    else if (l.cs === "Hold" && l.rem) h += '<span class="count sm c2-cd hold">' + mmss(l.rem) + "</span>";
+    h += '<div class="c2-m">' + [l.alt ? '<span dir="ltr">' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
     return h;
   }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
@@ -339,6 +456,7 @@
   function viewLoads() {
     var all = loadsFlat(), today = todayTehran(), todays = all.filter(function (x) { return x.date === today; });
     var mine = todays.filter(function (x) { return isMine(x.l); }), h = weatherCard();
+    if (isStandby(todays)) { h += '<div class="stampwrap"><div class="stamp' + (S.stampSeen ? " still" : "") + '"><b>' + (L === "fa" ? "استندبای" : "STANDBY") + "</b><small>" + (L === "fa" ? "همهٔ لودها متوقف" : "ALL LOADS ON HOLD") + "</small></div></div>"; if (!S.stampSeen) setTimeout(function () { S.stampSeen = true; }, 1500); } else S.stampSeen = false;
     if (S.loadedAt) h += '<p class="muted">' + tx("upd") + ": " + clockTxt(S.loadedAt) + " · " + tx("today") + " " + dateTxt(today) + "</p>";
     if (!todays.length) return h + '<div class="empty">' + tx("loads_none") + "</div>";
     if (mine.length) h += '<div class="h2">' + tx("loads_mine") + "</div>" + mine.map(loadCard).join("");
@@ -402,12 +520,41 @@
   function viewSettings() {
     var bgOn = lsGet("mj_bg", true), np = typeof Notification === "undefined" ? "" : Notification.permission;
     var h = '<div class="h2">' + tx("s_lang") + '</div><div class="card setrow">' + langSwitch() + "</div>";
-    h += '<div class="h2">' + tx("s_notif") + '</div><div class="card setrow">' + (typeof Notification === "undefined" ? '<span class="muted">—</span>' : np === "granted" ? '<span class="chip ok">' + tx("s_on") + '</span><span class="muted">' + tx("n_on") + "</span>" : '<button class="btn sm" data-act="notif">' + ic("alerts") + " " + tx("enable_n") + "</button>") + "</div>";
+    var pOn = pushActive(), ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches));
+    h += '<div class="h2">' + tx("s_notif") + '</div><div class="card setrow"><span class="grow">' + tx("push_t") + '</span><button class="switch' + (pOn ? " on" : "") + '" data-act="pushtog" aria-pressed="' + (pOn ? "true" : "false") + '"><i></i></button></div>';
+    h += '<div class="card setrow"><span class="grow">' + tx("snd_t") + '</span><button type="button" class="btn sm" data-act="sndtest">▶ ' + tx("snd_test") + '</button><button class="switch' + (lsGet("mj_snd", true) ? " on" : "") + '" data-act="sndtog" aria-pressed="' + (lsGet("mj_snd", true) ? "true" : "false") + '"><i></i></button></div>';
+    h += '<p class="muted small" style="margin:-4px 4px 12px">' + tx(typeof Notification !== "undefined" && Notification.permission === "denied" ? "push_blocked" : ios ? "push_ios" : "push_hint") + "</p>";
     h += '<div class="card setrow"><span class="grow">' + tx("s_bg") + '</span><button class="switch' + (bgOn ? " on" : "") + '" data-act="setbg" aria-pressed="' + (bgOn ? "true" : "false") + '"><i></i></button></div>';
     h += '<div class="h2">' + tx("s_acct") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_user") + '</span><span class="ltr">' + esc(D(S.sess.username)) + '</span></div><div><span>' + tx("f_pw") + '</span><span><button class="btn sm" data-act="gopw">' + tx("f_pw") + '</button></span></div></div></div>';
     h += '<div class="h2">' + tx("s_app") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_ver") + '</span><span class="ltr">' + APPV + '</span></div></div><p class="muted small">' + tx("s_install") + '</p></div>';
     return h + '<button class="btn wide danger" data-act="logout">' + ic("logout") + " " + tx("logout") + "</button>";
   }
+  (function () { var N = { on_l: ["آنلاین", "Online"], off_l: ["آفلاین", "Offline"] }; for (var k in N) if (!TX[k]) TX[k] = N[k]; })();
+  /* ---------- push texts ---------- */
+  (function () {
+    var N = { push_t: ["اعلان روی گوشی (حتی وقتی برنامه بسته است)", "Phone notifications (even when the app is closed)"], snd_test: ["تست صدا", "Test voice"], snd_t: ["صدای اعلان داخل برنامه", "Sound inside the app"],
+      push_ok: ["اعلان‌ها فعال شد.", "Notifications are on."], push_denied: ["اجازهٔ اعلان داده نشد. از تنظیمات مرورگر آن را باز کنید.", "Permission was not given. Allow notifications in the browser settings."],
+      push_unsup: ["این مرورگر اعلان را پشتیبانی نمی‌کند.", "This browser does not support notifications."],
+      push_hint: ["پیام‌ها و اعلان لودها (اضافه یا حذف‌شدن، شروع سوارشدن، توقف و ۲۰/۱۵/۱۰ دقیقه مانده به پرواز) با صدا روی گوشی می‌آید.", "Messages and load alerts (added/removed, boarding, hold, and 20/15/10 minutes to takeoff) arrive on your phone with a sound."],
+      push_ios: ["در آیفون ابتدا برنامه را از منوی اشتراک‌گذاری (Share) با «Add to Home Screen» به صفحهٔ اصلی اضافه کنید، سپس اعلان را روشن کنید.", "On iPhone, first add the app to your Home Screen (Share → Add to Home Screen), then switch notifications on."],
+      push_blocked: ["اعلان برای این سایت در مرورگر مسدود است؛ از تنظیمات مرورگر (قفل کنار آدرس) آن را آزاد کنید.", "Notifications are blocked for this site; unblock them in the browser settings (lock icon by the address)."] };
+    for (var k in N) if (Object.prototype.hasOwnProperty.call(N, k) && !TX[k]) TX[k] = N[k];
+  })();
+  /* ---------- chat v2 texts ---------- */
+  (function () {
+    var N = {
+      reply_b: ["پاسخ", "Reply"], fwd_b: ["فوروارد", "Forward"], copy_b: ["کپی", "Copy"], select_b: ["انتخاب", "Select"], delete_b: ["حذف", "Delete"],
+      fwd_lbl: ["فوروارد شده", "Forwarded"], you: ["شما", "You"], deleted_msg: ["پیام حذف شده", "Deleted message"],
+      search_ph: ["جستجو در این گفتگو…", "Search this chat…"], search_all: ["جستجو در گفتگوها و پیام‌ها…", "Search chats and messages…"], no_match: ["نتیجه‌ای نیست", "No results"],
+      sel_n: ["انتخاب شد", "selected"], fwd_to: ["فوروارد به", "Forward to"], fwd_done: ["فوروارد شد", "Forwarded"], del_q: ["این پیام‌ها برای همه حذف شوند؟", "Delete these messages for everyone?"],
+      c2_ok: ["تأیید", "OK"], c2_cancel: ["انصراف", "Cancel"], new_chat: ["گفتگوی جدید", "New chat"], new_group: ["گروه جدید", "New group"],
+      g_name_ph: ["نام گروه", "Group name"], g_create: ["ساخت گروه", "Create group"], g_members: ["عضو", "members"], g_created: ["گروه ساخته شد", "Group created"],
+      g_add: ["افزودن عضو", "Add members"], g_leave: ["ترک گروه", "Leave group"], g_leave_q: ["از این گروه خارج می‌شوید؟", "Leave this group?"], g_admin: ["مدیر", "Admin"],
+      g_remove: ["حذف", "Remove"], g_rename: ["تغییر نام", "Rename"], g_pick: ["اعضا را انتخاب کنید", "Choose members"], g_need: ["نام گروه و حداقل یک عضو لازم است", "Enter a group name and pick at least one member"],
+      copied: ["کپی شد", "Copied"], sel_all: ["انتخاب همه", "Select all"], clr_b: ["پاک‌کردن تاریخچه", "Clear history"], clr_all_b: ["پاک‌کردن همه", "Clear all"], clr_q: ["تاریخچهٔ این گفتگو فقط برای شما پاک شود؟", "Clear this chat's history for you?"], clr_all_q: ["تاریخچهٔ همهٔ گفتگوها فقط برای شما پاک شود؟", "Clear the history of all chats for you?"], clr_done: ["پاک شد", "Cleared"], cant_del: ["این پیام‌ها قابل حذف نیستند", "These messages can't be deleted"]
+    };
+    for (var k in N) if (Object.prototype.hasOwnProperty.call(N, k) && !TX[k]) TX[k] = N[k];
+  })();
   /* ---------- chat (WhatsApp-style) ---------- */
   var CHAT_URL = CFG.url + "/storage/v1/object/public/chat-files/";
   var AUD = {}, recTimer = 0;
@@ -417,8 +564,39 @@
   function sizeTxt(n) { return !n ? "" : n > 1048576 ? D((n / 1048576).toFixed(1)) + " MB" : D(Math.max(1, Math.round(n / 1024))) + " KB"; }
   function dayKey(at) { return new Date(new Date(at).getTime() + 3.5 * 3600 * 1000).toISOString().slice(0, 10); }
   function dayLabel(k) { var t = todayTehran(); if (k === t) return tx("today"); var y = new Date(Date.parse(t + "T12:00:00Z") - 86400000).toISOString().slice(0, 10); return k === y ? tx("yesterday") : dateTxt(k); }
+  var GCOL = ["#f2c94c", "#5aa9e6", "#6fcf7a", "#e8705f", "#c08cf0", "#3fb8a5", "#f28c28", "#ee8fb0"];
+  function gcol(id) { var h = 0, s = String(id); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return GCOL[h % GCOL.length]; }
+  function lastOf(arr) { return arr.length ? arr[arr.length - 1] : null; }
+  function prevTxt(m) { if (!m) return ""; var a = m.attach; if (a && a.kind === "chat") return a.type === "image" ? "📷 " + tx("photo_lbl") : a.type === "voice" ? "🎙 " + tx("voice_lbl") : "📄 " + (a.name || ""); if (a && a.kind === "sos") return "🆘 SOS"; return m.body || ""; }
+  function hlTxt(s) {
+    var q = (S.cq || "").trim(); if (!q) return esc(s);
+    var re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), out = "", last = 0, m;
+    while ((m = re.exec(s))) { if (!m[0]) { re.lastIndex++; continue; } out += esc(s.slice(last, m.index)) + '<mark class="hit">' + esc(m[0]) + "</mark>"; last = m.index + m[0].length; }
+    return out + esc(s.slice(last));
+  }
+  function matchKeys() {
+    var q = (S.cq || "").trim().toLowerCase(), r = []; if (!q) return r;
+    curMsgs().forEach(function (m) { var t = ((m.body || "") + " " + (m.attach && m.attach.kind === "chat" ? m.attach.name || "" : "")).toLowerCase(); if (t.indexOf(q) >= 0) r.push(m.id); });
+    return r;
+  }
+  function senderLabel(m) {
+    if (!m.staff) return tx("you");
+    if (isGrp()) return peerName(m.who);
+    return S.peer === "staff" ? tx("chat_title") : peerName(S.peer);
+  }
+  function quoteHtml(m) {
+    if (!m.rp) return "";
+    var cm = curMsgs(), o = null; for (var i = 0; i < cm.length; i++) if (cm[i].rid === m.rp) { o = cm[i]; break; }
+    return '<div class="quote" data-act="gotomsg" data-rid="' + m.rp + '"><b' + (o && o.staff && isGrp() ? ' style="color:' + gcol(o.who) + '"' : "") + ">" + esc(o ? senderLabel(o) : "") + "</b><span>" + esc(o ? prevTxt(o) : tx("deleted_msg")) + "</span></div>";
+  }
+  function selectable(m) { return !m.attach || m.attach.kind === "chat"; }
+  function myAdmin() { var g = grpById(gid()); return !!(g && g.admin); }
+  function canDel(m) { if (!selectable(m)) return false; if (isGrp()) return !m.staff || myAdmin(); return true; }
   function bubble(m, pop) {
     var a = m.attach, inner = "", mine = !m.staff;
+    if (m.kind === "created") return '<div class="dsep"><span>' + tx("g_created") + "</span></div>";
+    if (m.fwd) inner += '<div class="fwdl">↪ ' + tx("fwd_lbl") + "</div>";
+    inner += quoteHtml(m);
     if (a && a.kind === "chat") {
       var u = fileUrl(a);
       if (a.type === "image") inner += '<img class="cimg" src="' + esc(u) + '" alt="" loading="lazy" data-act="viewimg" data-u="' + esc(u) + '">';
@@ -428,60 +606,288 @@
     else if (a && a.kind === "edit") inner += '<div class="sysmsg">✏️ ' + tx("sys_edit") + "</div>";
     else if (a && a.kind === "reset") inner += '<div class="sysmsg">🔑 ' + tx("sys_reset") + "</div>";
     else if (a) inner += '<div class="sysmsg">📎 ' + esc(a.name || "") + "</div>";
-    if (m.body && !(a && (a.kind === "sos") && /^🆘/.test(m.body))) inner += '<span class="mtxt">' + esc(m.body) + "</span>";
-    var tick = mine ? '<span class="tick' + (m.seen ? " seen" : "") + '">' + (m.seen ? "✓✓" : "✓") + "</span>" : "";
-    var del = mine && S.sel === m.id && (!a || a.kind === "chat") ? '<button type="button" class="mdel" data-act="msgdel" data-id="' + m.id + '">🗑 ' + tx("del_msg") + "</button>" : "";
-    return '<div class="msg ' + (m.staff ? "staff" : "mine") + (S.sel === m.id ? " sel" : "") + (pop ? " pop" : "") + '"' + (mine ? ' data-act="msgsel" data-id="' + m.id + '"' : "") + ">" + (m.staff && S.peer === "staff" ? '<b class="who">' + tx("chat_title") + "</b>" : "") + inner + '<small><span>' + clockTxt(new Date(m.at).getTime()) + "</span>" + tick + "</small>" + del + "</div>";
+    if (m.body && !(a && (a.kind === "sos") && /^🆘/.test(m.body))) inner += '<span class="mtxt">' + hlTxt(m.body) + "</span>";
+    var tick = mine && !isGrp() ? '<span class="tick' + (m.seen ? " seen" : "") + '">' + (m.seen ? "✓✓" : "✓") + "</span>" : "";
+    var head = "";
+    if (m.staff && isGrp()) head = '<b class="who" style="color:' + gcol(m.who) + '">' + esc(peerName(m.who)) + "</b>";
+    else if (m.staff && S.peer === "staff") head = '<b class="who">' + tx("chat_title") + "</b>";
+    var cur = S.sr && S.cq && matchKeys()[S.sidx] === m.id;
+    var chk = S.selmode ? '<span class="sck' + (S.ss[m.id] ? " on" : "") + '">✓</span>' : "";
+    return '<div class="msg ' + (m.staff ? "staff" : "mine") + (S.ss[m.id] ? " sel" : "") + (cur ? " cur" : "") + (pop ? " pop" : "") + '" data-key="' + m.id + '" data-rid="' + m.rid + '">' + chk + head + inner + '<small><span>' + clockTxt(new Date(m.at).getTime()) + "</span>" + tick + "</small></div>";
   }
   function threadHtml() {
     var h = "", last = "";
     var cm = curMsgs(), mx = S.popAfter; cm.forEach(function (m) { var k = dayKey(m.at); if (k !== last) { last = k; h += '<div class="dsep"><span>' + dayLabel(k) + "</span></div>"; } h += bubble(m, m.id > S.popAfter); if (m.id > mx) mx = m.id; }); S.popAfter = mx;
     S.pend.forEach(function (p) { h += '<div class="msg mine pend"><span class="mtxt">⏳ ' + esc(p.label) + "</span></div>"; });
-    return h || '<div class="empty">' + tx(isDm() ? "dm_hello" : "msg_none") + "</div>";
+    return h || '<div class="empty">' + tx(isDm() || isGrp() ? "dm_hello" : "msg_none") + "</div>";
   }
   function voxRefresh() { Object.keys(AUD).forEach(function (k) { voxUpdate(+k); }); }
+  function thrEnd() { var t = document.getElementById("thr"); if (t) t.scrollTop = t.scrollHeight; }
+  function thrEndSoon() { thrEnd(); [60, 250, 700].forEach(function (ms) { setTimeout(function () { var t = document.getElementById("thr"); if (t && S.tab === "msgs" && !S.userScrolled) thrEnd(); }, ms); }); }
+  function updCompose() {
+    var w = document.getElementById("cmpw"); if (!w) return renderKeep();
+    var old = document.getElementById("mt"), v = old ? old.value : "", had = document.activeElement === old; var th0 = document.getElementById("thr"), end0 = th0 ? th0.scrollTop + th0.clientHeight >= th0.scrollHeight - 40 : false;
+    w.innerHTML = composeHtml(); var t = document.getElementById("mt"); if (t) { t.value = v; if (had) t.focus(); } chatToggle(); fixDigits(w); if (end0) thrEnd();
+  }
   function updateThread() {
     var th = document.getElementById("thr"); if (!th) return;
-    var near = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 160;
+    var near = th.scrollTop + th.clientHeight >= th.scrollHeight - 160, keep = th.scrollTop;
     th.innerHTML = threadHtml(); fixDigits(th); voxRefresh();
-    if (near && th.lastElementChild) th.lastElementChild.scrollIntoView({ block: "end" });
+    if (near && !(S.sr && S.cq)) thrEnd(); else th.scrollTop = keep;
   }
+  function replyBarHtml() { return S.rep ? '<div class="replybar"><div class="rq"><b>' + esc(S.rep.who) + "</b><span>" + esc(S.rep.txt) + '</span></div><button type="button" class="cbtn" data-act="repx">✕</button></div>' : ""; }
   function composeHtml() {
-    if (!S.peer || S.peer === "pick") return "";
+    if (!chatOpen() || S.gi) return "";
+    if (S.selmode) { var kn = Object.keys(S.ss).length, dis = kn ? "" : " disabled"; return '<div class="compose selbar"><button type="button" class="sbtn" data-act="selfwd"' + dis + '>↪ ' + tx("fwd_b") + '</button><button type="button" class="sbtn" data-act="selcopy"' + dis + '>⧉ ' + tx("copy_b") + '</button><button type="button" class="sbtn dng" data-act="seldel"' + dis + '>🗑 ' + tx("delete_b") + "</button></div>"; }
     if (S.rec) return '<div class="compose rec"><button type="button" class="cbtn" data-act="recx" title="✕">🗑</button><span class="rdot"></span><b id="rt" class="ltr">' + mmss((Date.now() - S.rec.t0) / 1000) + '</b><span class="grow"></span><button type="button" class="cbtn send" data-act="recsend">➤</button></div>';
-    return '<form class="compose" id="mf" autocomplete="off"><label class="cbtn" title="📎">📎<input type="file" id="cf" hidden accept="image/*,application/pdf,audio/*,video/mp4,.doc,.docx,.xls,.xlsx,.zip,.txt"></label><label class="cbtn" title="📷">📷<input type="file" id="cc" hidden accept="image/*" capture="environment"></label><textarea id="mt" rows="1" maxlength="1000" placeholder="' + esc(tx("msg_ph")) + '"></textarea><button type="submit" class="cbtn send" id="msend" hidden>➤</button><button type="button" class="cbtn mic" id="mmic" data-act="rec">🎙</button></form>';
+    return '<form class="compose" id="mf" autocomplete="off">' + replyBarHtml() + '<label class="cbtn" title="📎">📎<input type="file" id="cf" hidden accept="image/*,application/pdf,audio/*,video/mp4,.doc,.docx,.xls,.xlsx,.zip,.txt"></label><label class="cbtn" title="📷">📷<input type="file" id="cc" hidden accept="image/*" capture="environment"></label><textarea id="mt" rows="1" maxlength="1000" placeholder="' + esc(tx("msg_ph")) + '"></textarea><button type="submit" class="cbtn send" id="msend" hidden>➤</button><button type="button" class="cbtn mic" id="mmic" data-act="rec">🎙</button></form>';
   }
-
-  function lastOf(arr) { return arr.length ? arr[arr.length - 1] : null; }
-  function prevTxt(m) { if (!m) return ""; var a = m.attach; if (a && a.kind === "chat") return a.type === "image" ? "📷 " + tx("photo_lbl") : a.type === "voice" ? "🎙 " + tx("voice_lbl") : "📄 " + (a.name || ""); if (a && a.kind === "sos") return "🆘 SOS"; return m.body || ""; }
   function pickList() {
     var q = (S.pq || "").toLowerCase(), h = "";
     S.peers.forEach(function (p) { var n = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; if (q && (p.fa + " " + p.en).toLowerCase().indexOf(q) < 0) return; h += '<button type="button" class="crow" data-act="openchat" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + "</b></span></button>"; });
     return h || '<div class="empty">' + tx("dm_none") + "</div>";
   }
-  function viewChatList() {
-    var lm = lastOf(S.msgs), nS = unreadStaff();
-    var h = '<button type="button" class="sosrow" data-act="sos"><span class="sosb">SOS</span><span class="grow"><b>' + tx("sos_btn_t") + '</b><small>' + tx("sos_sub") + '</small></span></button><div class="h2">' + tx("dm_title") + '</div><div class="clist">';
+  /* ----- chat list ----- */
+  function convList() {
+    var by = {}, items = [];
+    S.dm.forEach(function (m) { if (!by[m.peer]) by[m.peer] = []; by[m.peer].push(m); });
+    Object.keys(by).forEach(function (id) { var l = lastOf(by[id]); items.push({ t: "dm", id: id, at: new Date(l.at).getTime(), last: l, u: unreadPeer(id) }); });
+    S.grp.forEach(function (g) { items.push({ t: "g", id: "g:" + g.id, g: g, at: g.last ? new Date(g.last.at).getTime() : 0, u: g.unread || 0 }); });
+    items.sort(function (a, b) { return b.at - a.at; });
+    return items;
+  }
+  function gAvatar(g) { return '<span class="av gav">' + esc(initials(g.name)) + "</span>"; }
+  function listSearchHtml() {
+    var q = (S.lq || "").trim().toLowerCase(); if (!q) return "";
+    var h = "", n = 0;
+    function row(p, name, av, txt, key) { n++; h += '<button type="button" class="crow" data-act="openhit" data-p="' + esc(p) + '">' + av + '<span class="grow"><b>' + esc(name) + "</b><small>" + esc(txt) + "</small></span></button>"; }
+    if ((tx("chat_title") + " staff").toLowerCase().indexOf(q) >= 0) row("staff", tx("chat_title"), '<span class="av logo"><img src="logo.png" alt=""></span>', tx("chat_sub"));
+    S.grp.forEach(function (g) { if (g.name.toLowerCase().indexOf(q) >= 0) row("g:" + g.id, g.name, gAvatar(g), (g.members || []).length + " " + tx("g_members")); });
+    S.peers.forEach(function (p) { var nm = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; if ((p.fa + " " + p.en).toLowerCase().indexOf(q) >= 0) row(p.id, nm, '<span class="av">' + esc(initials(nm)) + "</span>", ""); });
+    S.msgs.forEach(function (m) { if ((m.body || "").toLowerCase().indexOf(q) >= 0) row("staff", tx("chat_title"), '<span class="av logo"><img src="logo.png" alt=""></span>', m.body); });
+    S.dm.forEach(function (m) { if ((m.body || "").toLowerCase().indexOf(q) >= 0) row(m.peer, peerName(m.peer), '<span class="av">' + esc(initials(peerName(m.peer))) + "</span>", m.body); });
+    Object.keys(S.gm).forEach(function (k) { var g = grpById(+k); (S.gm[k] || []).forEach(function (m) { if (g && (m.body || "").toLowerCase().indexOf(q) >= 0) row("g:" + k, g.name, gAvatar(g), m.body); }); });
+    return h || '<div class="empty">' + tx("no_match") + "</div>";
+  }
+  function listRows() {
+    var lm = lastOf(S.msgs), nS = unreadStaff(), h = "";
     h += '<button type="button" class="crow pin" data-act="openchat" data-p="staff"><span class="av logo"><img src="logo.png" alt=""></span><span class="grow"><b>' + tx("chat_title") + '</b><small>' + esc(prevTxt(lm) || tx("chat_sub")) + '</small></span>' + (nS ? '<span class="cbadge">' + D(nS) + "</span>" : "") + "</button>";
-    var by = {}, order = [];
-    S.dm.forEach(function (m) { if (!by[m.peer]) { by[m.peer] = []; } by[m.peer].push(m); });
-    order = Object.keys(by).sort(function (a, b) { return lastOf(by[b]).id - lastOf(by[a]).id; });
-    order.forEach(function (id) { var l = lastOf(by[id]), n = peerName(id), u = unreadPeer(id); h += '<button type="button" class="crow" data-act="openchat" data-p="' + esc(id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + '</b><small>' + (l.mine ? "✓ " : "") + esc(prevTxt(l)) + "</small></span>" + (u ? '<span class="cbadge">' + D(u) + "</span>" : "") + "</button>"; });
-    if (!order.length) h += '<div class="empty">' + tx("dm_empty") + "</div>";
-    return h + '</div><button type="button" class="fab" data-act="openchat" data-p="pick">' + ic("msgs") + "<span>" + tx("dm_new") + "</span></button>";
+    var items = convList();
+    items.forEach(function (it) {
+      if (it.t === "dm") { var l = it.last, n = peerName(it.id); h += '<button type="button" class="crow" data-act="openchat" data-p="' + esc(it.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + '</b><small>' + (l.mine ? "✓ " : "") + (l.fwd ? "↪ " : "") + esc(prevTxt(l)) + "</small></span>" + (it.u ? '<span class="cbadge">' + D(it.u) + "</span>" : "") + "</button>"; }
+      else { var g = it.g, gl = g.last, pre = ""; if (gl && gl.kind === "msg") pre = (gl.mine ? tx("you") : peerName(gl.u)) + ": "; h += '<button type="button" class="crow" data-act="openchat" data-p="g:' + g.id + '">' + gAvatar(g) + '<span class="grow"><b>' + esc(g.name) + "</b><small>" + (gl && gl.kind === "created" ? esc(tx("g_created")) : esc(pre + prevTxt(gl))) + "</small></span>" + (it.u ? '<span class="cbadge">' + D(it.u) + "</span>" : "") + "</button>"; }
+    });
+    if (!items.length) h += '<div class="empty">' + tx("dm_empty") + "</div>";
+    return h;
+  }
+  function listBodyHtml() { return (S.lq || "").trim() ? listSearchHtml() : listRows(); }
+  function viewChatList() {
+    var h = '<button type="button" class="sosrow" data-act="sos"><span class="sosb">SOS</span><span class="grow"><b>' + tx("sos_btn_t") + '</b><small>' + tx("sos_sub") + '</small></span></button><div class="h2 h2row"><span>' + tx("dm_title") + '</span><button type="button" class="linkb" data-act="clrall">🗑 ' + tx("clr_all_b") + '</button></div>';
+    h += '<label class="fld lsearch"><input id="lq" type="search" autocomplete="off" placeholder="' + esc(tx("search_all")) + '" value="' + esc(S.lq || "") + '"></label>';
+    return h + '<div class="clist" id="lres">' + listBodyHtml() + '</div><button type="button" class="fab" data-act="newmenu">' + ic("msgs") + "<span>" + tx("dm_new") + "</span></button>";
   }
   function viewPick() {
     return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("dm_new") + '</b><small>' + tx("dm_sub") + '</small></div></div><label class="fld"><input id="pq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.pq || "") + '"></label><div class="clist" id="plist">' + pickList() + "</div>";
   }
+  /* ----- group creation / members ----- */
+  function gpickList() {
+    var st = S.gadd || S.gnew; if (!st) return ""; var q = (st.q || "").toLowerCase(), h = "", have = {};
+    if (S.gadd) { var g = grpById(gid()); if (g) g.members.forEach(function (m) { have[m.id] = 1; }); }
+    S.peers.forEach(function (p) { if (have[p.id]) return; var n = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; if (q && (p.fa + " " + p.en).toLowerCase().indexOf(q) < 0) return; h += '<button type="button" class="crow' + (st.sel[p.id] ? " on" : "") + '" data-act="gtog" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + '</b></span><span class="sck' + (st.sel[p.id] ? " on" : "") + '">✓</span></button>'; });
+    return h || '<div class="empty">' + tx("dm_none") + "</div>";
+  }
+  function gSelCount() { var st = S.gadd || S.gnew; return st ? Object.keys(st.sel).length : 0; }
+  function viewGnew() {
+    BAR = '<button type="button" class="btn pri" id="gcbtn" data-act="gcreate">' + tx("g_create") + " (" + D(gSelCount()) + ")</button>";
+    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("new_group") + '</b><small>' + tx("g_pick") + '</small></div></div><label class="fld"><input id="gname" maxlength="60" autocomplete="off" placeholder="' + esc(tx("g_name_ph")) + '" value="' + esc(S.gnew.name || "") + '"></label><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gnew.q || "") + '"></label><div class="clist" id="plist">' + gpickList() + "</div>";
+  }
+  function viewGadd() {
+    BAR = '<button type="button" class="btn pri" id="gcbtn" data-act="gaddgo">' + tx("g_add") + " (" + D(gSelCount()) + ")</button>";
+    return '<div class="chathead"><button type="button" class="backb" data-act="gaddback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("g_add") + '</b></div></div><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gadd.q || "") + '"></label><div class="clist" id="plist">' + gpickList() + "</div>";
+  }
+  function viewGinfo() {
+    var g = grpById(gid()); if (!g) return "";
+    var h = '<div class="chathead"><button type="button" class="backb" data-act="ginfoback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + "</button>" + gAvatar(g) + "<div><b>" + esc(g.name) + "</b><small>" + D(g.members.length) + " " + tx("g_members") + "</small></div></div>";
+    if (g.admin) h += '<div class="card"><label class="fld"><span>' + tx("g_rename") + '</span><input id="grn" maxlength="60" value="' + esc(g.name) + '"></label><button type="button" class="btn pri" data-act="grename">' + tx("g_rename") + '</button></div><button type="button" class="btn" data-act="gadd">＋ ' + tx("g_add") + "</button>";
+    h += '<div class="h2" style="margin-top:14px">' + tx("g_members") + '</div><div class="clist">';
+    g.members.forEach(function (m) { var n = m.me ? tx("you") : peerName(m.id); h += '<div class="crow"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + "</b>" + (m.admin ? "<small>" + tx("g_admin") + "</small>" : "") + "</span>" + (g.admin && !m.me ? '<button type="button" class="btn sm" data-act="grm" data-p="' + esc(m.id) + '">' + tx("g_remove") + "</button>" : "") + "</div>"; });
+    return h + '</div><button type="button" class="btn danger" data-act="gleave" style="margin-top:14px">' + tx("g_leave") + "</button>";
+  }
   function viewMsgs() {
     if (!S.peer) return viewChatList();
     if (S.peer === "pick") return viewPick();
-    var nm = S.peer === "staff" ? tx("chat_title") : peerName(S.peer), sb = S.peer === "staff" ? tx("chat_sub") : "", av = S.peer === "staff" ? '<img src="logo.png" alt="">' : '<span class="av">' + esc(initials(nm)) + "</span>";
-    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + "</button>" + av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + '</div></div><div class="thread" id="thr">' + threadHtml() + '</div><div style="height:96px"></div>' + composeHtml();
+    if (S.peer === "gnew") return viewGnew();
+    if (isGrp() && S.gadd) return viewGadd();
+    if (isGrp() && S.gi) return viewGinfo();
+    var g = isGrp() ? grpById(gid()) : null;
+    var nm = isGrp() ? (g ? g.name : "…") : S.peer === "staff" ? tx("chat_title") : peerName(S.peer), sb = isGrp() ? (g ? D(g.members.length) + " " + tx("g_members") : "") : '<span id="pst" class="pst">' + presTxt(!!S.pres[S.peer]) + "</span>";
+    var av = isGrp() ? (g ? gAvatar(g) : "") : S.peer === "staff" ? '<img src="logo.png" alt="">' : '<span class="av">' + esc(initials(nm)) + "</span>";
+    var head;
+    if (S.selmode) { var ks = Object.keys(S.ss).length; head = '<div class="chathead selhead"><button type="button" class="backb" data-act="selx">✕</button><b class="grow">' + D(ks) + " " + tx("sel_n") + '</b><button type="button" class="selall" data-act="selall">' + tx("sel_all") + "</button></div>"; }
+    else head = '<div class="chathead"><button type="button" class="backb backpill" data-act="chatback" aria-label="' + tx("back") + '"><span class="barr">' + (L === "fa" ? "→" : "←") + "</span><span>" + tx("back") + "</span></button>" + (isGrp() ? '<button type="button" class="ghd" data-act="ginfo">' + av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div></button>" : av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div>") + '<span class="grow"></span><button type="button" class="backb" data-act="sropen" title="' + esc(tx("search_ph")) + '">🔍</button>' + (isGrp() ? "" : '<button type="button" class="backb" data-act="clrask" data-p="' + esc(S.peer) + '" title="' + esc(tx("clr_b")) + '">🗑</button>') + "</div>";
+    var sbar = S.sr ? '<div class="searchbar"><input id="cq" type="search" autocomplete="off" placeholder="' + esc(tx("search_ph")) + '" value="' + esc(S.cq || "") + '"><span id="cqn" class="cqn">' + srCount() + '</span><button type="button" class="backb" data-act="srprev">▲</button><button type="button" class="backb" data-act="srnext">▼</button><button type="button" class="backb" data-act="srclose">✕</button></div>' : "";
+    return '<div class="chatwrap">' + head + sbar + '<div class="thread' + (S.selmode ? " selecting" : "") + '" id="thr">' + threadHtml() + '</div><div id="cmpw">' + composeHtml() + "</div></div>";
   }
-  function viewMsgsOld() {
-    return '<div class="chathead"><img src="logo.png" alt=""><div><b>' + tx("chat_title") + "</b><small>" + tx("chat_sub") + '</small></div></div><div class="thread" id="thr">' + threadHtml() + '</div><div style="height:96px"></div>' + composeHtml();
+  function srCount() { var mk = matchKeys(); return (S.cq || "").trim() ? (mk.length ? D(S.sidx + 1) + "/" + D(mk.length) : tx("no_match")) : ""; }
+  function srJump() {
+    var mk = matchKeys(), c = document.getElementById("cqn"); if (c) c.textContent = srCount();
+    updateThread();
+    var k = mk[S.sidx]; if (k) { var el = document.querySelector('#thr .msg[data-key="' + k + '"]'); if (el) el.scrollIntoView({ block: "center" }); }
   }
+  /* ----- actions ----- */
+  function renderKeep() { S.noscroll = true; render(); }
+  function copyText(t) { try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t); return true; } } catch (e) { /* fall through */ } var ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; } document.body.removeChild(ta); return ok; }
+  function doReply(k) { var m = msgByKey(k); if (!m || !selectable(m)) return; S.rep = { rid: m.rid, who: senderLabel(m), txt: prevTxt(m) }; var viaMenu = !!S.menu; S.menu = 0; if (viaMenu) renderKeep(); else updCompose(); var t = document.getElementById("mt"); if (t) { try { t.focus({ preventScroll: true }); } catch (e) { t.focus(); } } }
+  function doFwd(keys) { var items = keys.map(msgByKey).filter(function (m) { return m && selectable(m); }); if (!items.length) return; S.fw = { items: items.slice(0, 25), q: "" }; S.menu = 0; renderKeep(); }
+  function openMenu(k) { if (S.menu === k || S.selmode) return; S.menu = k; renderKeep(); }
+  function askDelete(keys) {
+    var list = keys.map(msgByKey).filter(function (m) { return m && canDel(m); }); if (!list.length) return toast(tx("cant_del"));
+    S.dlg = { t: tx("del_q"), act: "delgo", keys: list.map(function (m) { return m.id; }) }; S.menu = 0; renderKeep();
+  }
+  function delMsgs(keys) {
+    var ids = keys.map(function (k) { var m = msgByKey(k); return m ? m.rid : 0; }).filter(Boolean), p;
+    if (isGrp()) p = authed("jumper_group_delete_msgs", { p_gid: gid(), p_ids: ids }).then(function () { return refreshGroupMsgs(gid()); }).then(refreshGroups);
+    else if (isDm()) p = authed("jumper_dm_delete_many", { p_ids: ids }).then(function () { return refreshDm(); });
+    else p = authed("jumper_delete_msgs", { p_ids: ids }).then(function () { return refreshMsgs(); });
+    return p.then(function () { S.selmode = false; S.ss = {}; S.menu = 0; S.dlg = null; renderKeep(); }).catch(function () { S.dlg = null; renderKeep(); toast(tx("fail")); });
+  }
+  function fwdSend(target) {
+    var fw = S.fw; if (!fw) return; S.fw = null; renderKeep();
+    var chain = Promise.resolve();
+    fw.items.forEach(function (m) { chain = chain.then(function () { return sendTo(target, m.body || "", m.attach && m.attach.kind === "chat" ? m.attach : null, null, true); }); });
+    chain.then(function () { S.selmode = false; S.ss = {}; toast(tx("fwd_done")); if (S.tab === "msgs" && chatOpen()) updateThread(); }).catch(function () { toast(tx("fail")); });
+  }
+  function fwdTargets() {
+    var q = ((S.fw && S.fw.q) || "").toLowerCase(), h = "";
+    function row(t, name, av, sub) { if (q && name.toLowerCase().indexOf(q) < 0) return; h += '<button type="button" class="crow" data-act="fwdto" data-t="' + esc(t) + '">' + av + '<span class="grow"><b>' + esc(name) + "</b>" + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></button>"; }
+    row("staff", tx("chat_title"), '<span class="av logo"><img src="logo.png" alt=""></span>', tx("chat_sub"));
+    S.grp.forEach(function (g) { row("g:" + g.id, g.name, gAvatar(g), g.members.length + " " + tx("g_members")); });
+    S.peers.forEach(function (p) { var nm = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; row(p.id, nm, '<span class="av">' + esc(initials(nm)) + "</span>", ""); });
+    return h || '<div class="empty">' + tx("dm_none") + "</div>";
+  }
+  function chatModals() {
+    var h = "";
+    if (S.menu) {
+      var m = msgByKey(S.menu);
+      if (m) {
+        h += '<div class="modal" data-act="menux"><div class="sheet msheet"><div class="mprev">' + esc(prevTxt(m)) + "</div>" +
+          (selectable(m) ? '<button type="button" class="mopt" data-act="mreply">↩ ' + tx("reply_b") + '</button><button type="button" class="mopt" data-act="mfwd">↪ ' + tx("fwd_b") + "</button>" : "") +
+          (m.body ? '<button type="button" class="mopt" data-act="mcopy">⧉ ' + tx("copy_b") + "</button>" : "") +
+          (selectable(m) ? '<button type="button" class="mopt" data-act="msel">☑ ' + tx("select_b") + "</button>" : "") +
+          (canDel(m) ? '<button type="button" class="mopt danger" data-act="mdel">🗑 ' + tx("delete_b") + "</button>" : "") + "</div></div>";
+      }
+    }
+    if (S.fw) h += '<div class="modal" data-act="fwdx"><div class="sheet"><div class="h2">' + tx("fwd_to") + ' (' + D(S.fw.items.length) + ')</div><label class="fld"><input id="fq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.fw.q || "") + '"></label><div class="clist" id="fwl">' + fwdTargets() + '</div><button type="button" class="btn" data-act="fwdx" style="margin-top:10px">' + tx("c2_cancel") + "</button></div></div>";
+    if (S.nm) h += '<div class="modal" data-act="nmx"><div class="sheet msheet"><button type="button" class="mopt" data-act="openchat" data-p="pick">💬 ' + tx("new_chat") + '</button><button type="button" class="mopt" data-act="openchat" data-p="gnew">👥 ' + tx("new_group") + "</button></div></div>";
+    if (S.dlg) h += '<div class="modal" data-act="dlgx"><div class="sheet msheet"><div class="mprev">' + esc(S.dlg.t) + '</div><div class="row2"><button type="button" class="btn" data-act="dlgx">' + tx("c2_cancel") + '</button><button type="button" class="btn danger" data-act="dlgok">' + tx("c2_ok") + "</button></div></div></div>";
+    return h;
+  }
+  /* ----- gestures: swipe left = reply, swipe right = forward, long press / right click = menu ----- */
+  var G = { el: null, x: 0, y: 0, dx: 0, drag: false, lp: 0, cap: 0 };
+  function gReset() { clearTimeout(G.lp); if (G.el) { G.el.style.transition = "transform .18s"; G.el.style.transform = ""; G.el.removeAttribute("data-sw"); var e = G.el; setTimeout(function () { e.style.transition = ""; }, 200); } G.el = null; G.drag = false; }
+  document.addEventListener("pointerdown", function (ev) {
+    var el = ev.target.closest ? ev.target.closest("#thr .msg[data-key]") : null; if (!el || (ev.pointerType === "mouse" && ev.button !== 0)) return;
+    if (S.selmode) return;
+    G.el = el; G.x = ev.clientX; G.y = ev.clientY; G.dx = 0; G.drag = false; G.cap = ev.pointerId; clearTimeout(G.lp);
+    G.lp = setTimeout(function () { if (G.el === el && !G.drag) { var k = +el.dataset.key; G.el = null; openMenu(k); } }, 480);
+  });
+  document.addEventListener("pointermove", function (ev) {
+    if (!G.el) return; var dx = ev.clientX - G.x, dy = ev.clientY - G.y;
+    if (!G.drag) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { gReset(); return; }
+      if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy)) { G.drag = true; clearTimeout(G.lp); }
+      else { if (Math.abs(dx) + Math.abs(dy) > 8) clearTimeout(G.lp); return; }
+    }
+    G.dx = Math.max(-96, Math.min(96, dx)); G.el.style.transform = "translateX(" + G.dx + "px)"; G.el.setAttribute("data-sw", G.dx <= -60 ? "reply" : G.dx >= 60 ? "fwd" : "");
+  });
+  function gEnd() { clearTimeout(G.lp); if (!G.el) return; var d = G.dx, k = +G.el.dataset.key, was = G.drag; gReset(); if (was) { if (d <= -60) doReply(k); else if (d >= 60) doFwd([k]); } }
+  document.addEventListener("scroll", function (ev) { var t = ev.target; if (t && t.id === "thr") { S.userScrolled = t.scrollTop + t.clientHeight < t.scrollHeight - 120; } }, true);
+  document.addEventListener("pointerup", gEnd); document.addEventListener("pointercancel", function () { gReset(); });
+  document.addEventListener("contextmenu", function (ev) { var el = ev.target.closest ? ev.target.closest("#thr .msg[data-key]") : null; if (!el) return; ev.preventDefault(); gReset(); openMenu(+el.dataset.key); });
+  /* ---------- chat v2 actions ---------- */
+  function selKeys() { return Object.keys(S.ss).map(Number).sort(function (a, b) { return a - b; }); }
+  function leaveGroup() {
+    var g = grpById(gid()); if (!g) return; var me = null; g.members.forEach(function (m) { if (m.me) me = m.id; }); if (!me) return;
+    authed("jumper_group_remove", { p_gid: g.id, p_member: me }).then(function () { return refreshGroups(); }).then(function () { S.peer = ""; S.gi = false; S.dlg = null; S.anim = true; render(); toTop(); }).catch(function () { S.dlg = null; renderKeep(); toast(tx("fail")); });
+  }
+  function clearChat(peer) {
+    var ps = [];
+    if (peer === "*") { ps.push(authed("jumper_messages_clear")); ps.push(authed("jumper_dm_clear_all")); }
+    else if (peer === "staff") ps.push(authed("jumper_messages_clear"));
+    else if (peer && peer.indexOf("g:") !== 0) ps.push(authed("jumper_dm_clear", { p_peer: peer }));
+    Promise.all(ps).then(function () { return Promise.all([refreshMsgs(), refreshDm()]); }).then(function () { S.selmode = false; S.ss = {}; S.dlg = null; renderKeep(); toast(tx("clr_done")); }).catch(function () { S.dlg = null; renderKeep(); toast(tx("fail")); });
+  }
+  /* long press on a chat row = clear history */
+  var LPR = { t: 0, fired: 0 };
+  document.addEventListener("pointerdown", function (ev) {
+    var row = ev.target.closest ? ev.target.closest("#lres .crow[data-p]") : null; if (!row || (ev.pointerType === "mouse" && ev.button !== 0)) return;
+    var p = row.dataset.p; if (!p || p.indexOf("g:") === 0) return; clearTimeout(LPR.t); LPR.x = ev.clientX; LPR.y = ev.clientY;
+    LPR.t = setTimeout(function () { LPR.fired = Date.now(); S.dlg = { t: tx("clr_q"), act: "clrgo", peer: p }; renderKeep(); }, 550);
+  });
+  document.addEventListener("pointermove", function (ev) { if (LPR.t && (Math.abs(ev.clientX - LPR.x) > 8 || Math.abs(ev.clientY - LPR.y) > 8)) { clearTimeout(LPR.t); LPR.t = 0; } });
+  ["pointerup", "pointercancel"].forEach(function (n) { document.addEventListener(n, function () { clearTimeout(LPR.t); LPR.t = 0; }); });
+  document.addEventListener("contextmenu", function (ev) { if (ev.target.closest && ev.target.closest("#lres .crow[data-p]")) ev.preventDefault(); });
+  document.addEventListener("click", function (ev) { if (Date.now() - LPR.fired < 700 && ev.target.closest && ev.target.closest("#lres .crow")) { ev.stopPropagation(); ev.preventDefault(); } }, true);
+  function chatAct(a, t, ev) {
+    var bk = ev.target === t || t.tagName === "BUTTON";
+    switch (a) {
+      case "chatback": S.peer = ""; S.anim = true; S.rep = null; S.selmode = false; S.ss = {}; S.cq = ""; S.sr = false; S.gi = false; S.gadd = null; S.gnew = null; S.lq = ""; render(); toTop(); return true;
+      case "newmenu": S.nm = true; renderKeep(); return true;
+      case "nmx": if (ev.target === t) { S.nm = false; renderKeep(); } return true;
+      case "menux": if (ev.target === t) { S.menu = 0; renderKeep(); } return true;
+      case "mreply": doReply(S.menu); return true;
+      case "mfwd": doFwd([S.menu]); return true;
+      case "mcopy": { var m = msgByKey(S.menu); if (m && m.body) { copyText(m.body); toast(tx("copied")); } S.menu = 0; renderKeep(); return true; }
+      case "mdel": askDelete([S.menu]); return true;
+      case "msel": S.selmode = true; S.ss = {}; S.ss[S.menu] = true; S.menu = 0; renderKeep(); return true;
+      case "selall": { var all = curMsgs().filter(selectable); var full = all.length && all.every(function (m) { return S.ss[m.id]; }); S.ss = {}; if (!full) all.forEach(function (m) { S.ss[m.id] = true; }); renderKeep(); return true; }
+      case "clrask": S.dlg = { t: tx("clr_q"), act: "clrgo", peer: t.dataset.p || S.peer }; renderKeep(); return true;
+      case "clrall": S.dlg = { t: tx("clr_all_q"), act: "clrgo", peer: "*" }; renderKeep(); return true;
+      case "selx": S.selmode = false; S.ss = {}; renderKeep(); return true;
+      case "selfwd": doFwd(selKeys()); return true;
+      case "selcopy": { var txt = selKeys().map(msgByKey).filter(Boolean).map(function (x) { return x.body || ""; }).filter(Boolean).join("\n"); if (txt) { copyText(txt); toast(tx("copied")); } return true; }
+      case "seldel": askDelete(selKeys()); return true;
+      case "fwdx": if (bk) { S.fw = null; renderKeep(); } return true;
+      case "fwdto": fwdSend(t.dataset.t); return true;
+      case "dlgx": if (bk) { S.dlg = null; renderKeep(); } return true;
+      case "dlgok": { var d = S.dlg; if (!d) return true; if (d.act === "delgo") delMsgs(d.keys); else if (d.act === "clrgo") clearChat(d.peer); else if (d.act === "gleave") leaveGroup(); return true; }
+      case "repx": S.rep = null; updCompose(); return true;
+      case "gotomsg": { var el = document.querySelector('#thr .msg[data-rid="' + t.dataset.rid + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(function () { el.classList.remove("flash"); }, 1400); } return true; }
+      case "sropen": S.sr = true; S.cq = ""; S.sidx = 0; renderKeep(); setTimeout(function () { var i = document.getElementById("cq"); if (i) i.focus(); }, 30); return true;
+      case "srclose": S.sr = false; S.cq = ""; renderKeep(); return true;
+      case "srprev": case "srnext": { var mk = matchKeys(); if (mk.length) { S.sidx = (S.sidx + (a === "srprev" ? -1 : 1) + mk.length) % mk.length; srJump(); } return true; }
+      case "openhit": { var q = S.lq; S.lq = ""; openChat(t.dataset.p); S.cq = q; S.sr = true; var mk2 = matchKeys(); S.sidx = Math.max(0, mk2.length - 1); S.stick = false; S.noscroll = true; render(); setTimeout(srJump, 60); return true; }
+      case "ginfo": S.gi = true; render(); toTop(); return true;
+      case "ginfoback": S.gi = false; render(); return true;
+      case "gadd": S.gadd = { sel: {}, q: "" }; render(); toTop(); return true;
+      case "gaddback": S.gadd = null; render(); return true;
+      case "gtog": { var st = S.gadd || S.gnew; if (!st) return true; var id = t.dataset.p; if (st.sel[id]) delete st.sel[id]; else st.sel[id] = 1; var l = document.getElementById("plist"); if (l) l.innerHTML = gpickList(); var cb = document.getElementById("gcbtn"); if (cb) cb.textContent = (S.gadd ? tx("g_add") : tx("g_create")) + " (" + D(gSelCount()) + ")"; return true; }
+      case "gcreate": {
+        var nm = (document.getElementById("gname") ? document.getElementById("gname").value : S.gnew.name || "").trim(), ms = Object.keys(S.gnew.sel);
+        if (!nm || !ms.length) return toast(tx("g_need")), true;
+        authed("jumper_group_create", { p_name: nm, p_members: ms }).then(function (id) { return refreshGroups().then(function () { openChat("g:" + id); }); }).catch(function () { toast(tx("fail")); }); return true;
+      }
+      case "gaddgo": { var ms2 = Object.keys(S.gadd.sel); if (!ms2.length) return true; authed("jumper_group_add", { p_gid: gid(), p_members: ms2 }).then(function () { return refreshGroups(); }).then(function () { S.gadd = null; render(); }).catch(function () { toast(tx("fail")); }); return true; }
+      case "grename": { var gi = document.getElementById("grn"); if (gi && gi.value.trim()) authed("jumper_group_rename", { p_gid: gid(), p_name: gi.value.trim() }).then(function () { return refreshGroups(); }).then(function () { render(); }).catch(function () { toast(tx("fail")); }); return true; }
+      case "grm": authed("jumper_group_remove", { p_gid: gid(), p_member: t.dataset.p }).then(function () { return refreshGroups(); }).then(function () { render(); }).catch(function () { toast(tx("fail")); }); return true;
+      case "gleave": S.dlg = { t: tx("g_leave_q"), act: "gleave" }; renderKeep(); return true;
+    }
+    return false;
+  }
+  document.addEventListener("click", function (ev) {
+    if (!S.selmode) return; var el = ev.target.closest ? ev.target.closest("#thr .msg[data-key]") : null; if (!el) return;
+    var k = +el.dataset.key, m = msgByKey(k); if (!m || !selectable(m)) return;
+    if (S.ss[k]) delete S.ss[k]; else S.ss[k] = 1; if (!Object.keys(S.ss).length) S.selmode = false; renderKeep();
+  });
+  document.addEventListener("input", function (ev) {
+    var i = ev.target; if (!i || !i.id) return;
+    if (i.id === "lq") { S.lq = i.value; var l = document.getElementById("lres"); if (l) l.innerHTML = listBodyHtml(); }
+    else if (i.id === "cq") { S.cq = i.value; S.sidx = Math.max(0, matchKeys().length - 1); srJump(); }
+    else if (i.id === "gname" && S.gnew) S.gnew.name = i.value;
+    else if (i.id === "gq") { var st = S.gadd || S.gnew; if (st) { st.q = i.value; var pl = document.getElementById("plist"); if (pl) pl.innerHTML = gpickList(); } }
+    else if (i.id === "fq" && S.fw) { S.fw.q = i.value; var fl = document.getElementById("fwl"); if (fl) fl.innerHTML = fwdTargets(); }
+  });
+  document.addEventListener("keydown", function (ev) { if (ev.target && ev.target.id === "cq" && ev.key === "Enter") { ev.preventDefault(); var mk = matchKeys(); if (mk.length) { S.sidx = (S.sidx + (ev.shiftKey ? -1 : 1) + mk.length) % mk.length; srJump(); } } });
   function chatToggle() { var t = document.getElementById("mt"), s = document.getElementById("msend"), m = document.getElementById("mmic"); if (!t || !s || !m) return; var has = !!t.value.trim(); s.hidden = !has; m.hidden = has; t.style.height = "auto"; t.style.height = Math.min(120, Math.max(48, t.scrollHeight)) + "px"; }
   function voxUpdate(id) {
     var a = AUD[id], el = document.querySelector('.vox[data-id="' + id + '"]'); if (!el || !a) return;
@@ -606,7 +1012,7 @@
     list.forEach(function (o) { var val = o[0], lab = o[L === "fa" ? 1 : 2]; h += '<option value="' + esc(val) + '"' + (val === cur ? " selected" : "") + ">" + esc(lab) + "</option>"; });
     return h;
   }
-  function startEdit(folder) { var vals = {}; EDIT[folder].forEach(function (f) { var v = getVal(f[0]); vals[f[0]] = f[2] === "xl" ? JSON.parse(JSON.stringify(v)) : String(v); }); S.edit = { folder: folder, vals: vals, review: false, err: "" }; render(); window.scrollTo(0, 0); }
+  function startEdit(folder) { var vals = {}; EDIT[folder].forEach(function (f) { var v = getVal(f[0]); vals[f[0]] = f[2] === "xl" ? JSON.parse(JSON.stringify(v)) : String(v); }); S.edit = { folder: folder, vals: vals, review: false, err: "" }; render(); toTop(); }
   var GM = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   function dateBtn(k, v) { return '<button type="button" class="dd-btn" data-act="cal" data-k="' + k + '"><span class="v' + (v ? "" : " ph") + '">' + (v ? esc(dateTxt(v)) : tx("pickDate")) + '</span><span class="cal-ic">' + ic("cal") + "</span></button>"; }
   function addYears(n) { var d = todayTehran(); return (+d.slice(0, 4) + n) + d.slice(4); }
@@ -708,11 +1114,12 @@
   }
   function logStats(rows) {
     var yr = function (iso) { return L === "fa" ? g2j(+iso.slice(0, 4), +iso.slice(5, 7), +iso.slice(8, 10))[0] : +iso.slice(0, 4); }, ty = yr(todayTehran());
-    var year = 0, mx = 0, last = "", types = {};
+    var base = +((S.me && S.me.ext && S.me.ext.totalJumps) || 0) || 0, year = 0, mx = 0, last = "", types = {};
     rows.forEach(function (r) { if (r.d) { if (yr(r.d) === ty) year++; if (!last || r.d > last) last = r.d; } if (+r.alt > mx) mx = +r.alt; var t = r.jt || "—"; types[t] = (types[t] || 0) + 1; });
     var ago = last ? daysUntil(last) : null, tk = Object.keys(types).sort(function (a, b) { return types[b] - types[a]; }).slice(0, 5), top = tk.length ? types[tk[0]] : 1;
-    var h = '<div class="card lstats"><div class="h2">' + tx("log_stats") + '</div><div class="lsg"><div><b>' + D(rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "—") + "</b><span>" + tx("ls_max") + " (ft)</span></div><div><b>" + (last ? dateTxt(last) : "—") + "</b><span>" + tx("ls_last") + (ago !== null && ago <= 0 ? " · " + fmt(tx("ls_ago"), { d: -ago }) : "") + "</span></div></div>";
+    var h = '<div class="card lstats"><div class="h2">' + tx("log_stats") + '</div><div class="lsg"><div><b>' + D(base + rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "—") + "</b><span>" + tx("ls_max") + " (ft)</span></div><div><b>" + (last ? dateTxt(last) : "—") + "</b><span>" + tx("ls_last") + (ago !== null && ago <= 0 ? " · " + fmt(tx("ls_ago"), { d: -ago }) : "") + "</span></div></div>";
     if (tk.length) { h += '<div class="h2" style="margin-top:12px">' + tx("ls_types") + "</div>"; tk.forEach(function (t) { h += '<div class="lbar"><span>' + esc(t) + '</span><div><i style="width:' + Math.round(types[t] * 100 / top) + '%"></i></div><b>' + D(types[t]) + "</b></div>"; }); }
+    if (base) h += '<p class="muted small" style="margin:10px 0 0">' + tx("ls_base") + ": " + D(base) + " + " + tx("ls_rec") + ": " + D(rows.length) + "</p>";
     return h + "</div>";
   }
   function logBody() {
@@ -720,7 +1127,8 @@
     if (rows === null || rows === undefined) return '<div class="empty">…</div>';
     if (!rows.length) return '<div class="empty">' + tx("log_none") + "</div>";
     var h = logStats(rows) + '<div class="card logt"><div class="lr lh"><span>' + tx("log_date") + "</span><span>" + tx("log_load") + "</span><span>" + tx("log_ac") + "</span><span>" + tx("log_type") + "</span><span>" + tx("log_alt") + "</span></div>";
-    rows.forEach(function (r) { h += '<div class="lr"><span>' + dateTxt(r.d) + "</span><span>" + D(r.n) + '</span><span class="ltr">' + esc(r.ac || "—") + "</span><span>" + esc(r.jt || "—") + "</span><span>" + (r.alt ? D(r.alt) : "—") + "</span></div>"; });
+    var curD = "", perDay = {}; rows.forEach(function (r) { perDay[r.d] = (perDay[r.d] || 0) + 1; });
+    rows.forEach(function (r) { if (r.d !== curD) { curD = r.d; h += '<div class="lr ldh"><b>' + dateTxt(r.d) + "</b><span>" + D(perDay[r.d]) + " " + tx("ls_jumps") + "</span></div>"; } h += '<div class="lr"><span>' + dateTxt(r.d) + "</span><span>" + D(r.n) + '</span><span class="ltr">' + esc(r.ac || "—") + "</span><span>" + esc(r.jt || "—") + "</span><span>" + (r.alt ? D(r.alt) : "—") + "</span></div>"; });
     return h + "</div>";
   }
   function folderBody(key) {
@@ -764,10 +1172,11 @@
     items.forEach(function (it) { var dl = it[1] ? daysUntil(it[1]) : null, cls = dl === null ? "na" : dl < 0 ? "bad" : dl <= 30 ? "warn" : "ok", txt = dl === null ? tx("rd_none") : dl < 0 ? tx("rd_exp") : fmt(tx("rd_left"), { d: dl }); h += '<div class="rd ' + cls + '"><i></i><span class="grow"><b>' + tx(it[0]) + '</b><small>' + (it[1] ? dateTxt(it[1]) : "") + "</small></span><em>" + txt + "</em></div>"; });
     return h + "</div>";
   }
-  function modalHtml() { return calModal() + bellModal() + loadModal() + sosModal() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
+  function modalHtml() { return calModal() + bellModal() + loadModal() + sosModal() + chatModals() + (S.img ? '<div class="imgview" data-act="closeimg"><img src="' + esc(S.img) + '" alt=""><a class="imgopen" href="' + esc(S.img) + '" target="_blank" rel="noopener">⬇</a></div>' : ""); }
 
   function refreshLog() { return authed("jumper_logbook").then(function (d) { var n = JSON.stringify(d || []); if (n !== S.logSig) { S.logSig = n; S.log = d || []; return true; } return false; }).catch(function () { return false; }); }
   function handleAct(a, t, ev) {
+    if (chatAct(a, t, ev)) return true;
     if (a === "cal") { openCal(t.dataset.k); return true; }
     if (a === "calclose") { if (ev.target === t) { S.cal = null; render(); } return true; }
     if (a === "calnav") { var m2 = S.cal.vm + +t.dataset.n, y2 = S.cal.vy; if (m2 > 12) { m2 = 1; y2++; } if (m2 < 1) { m2 = 12; y2--; } S.cal.vy = y2; S.cal.vm = m2; render(); return true; }
@@ -780,8 +1189,11 @@
     if (a === "bell") { S.bell = true; S.notes.forEach(function (n) { n.read = true; }); saveNotes(); render(); return true; }
     if (a === "closebell") { if (ev.target === t || t.tagName === "BUTTON") { S.bell = false; render(); } return true; }
     if (a === "clearnotes") { S.notes = []; saveNotes(); render(); return true; }
+    if (a === "pushtog") { if (pushActive()) pushOff(); else pushOn(); return true; }
+    if (a === "sndtest") { vUnlock(); setTimeout(function () { VQ = Promise.resolve(); var on = lsGet("mj_snd", true); if (!on) lsSet("mj_snd", true); speakCall(1, 20); if (!on) setTimeout(function () { lsSet("mj_snd", false); }, 100); }, 80); return true; }
+    if (a === "sndtog") { lsSet("mj_snd", !lsGet("mj_snd", true)); if (lsGet("mj_snd", true)) beep(); render(); return true; }
     if (a === "setbg") { lsSet("mj_bg", lsGet("mj_bg", true) ? false : true); render(); return true; }
-    if (a === "gopw") { S.tab = "me"; S.view = "f_pw"; S.anim = true; render(); window.scrollTo(0, 0); return true; }
+    if (a === "gopw") { S.tab = "me"; S.view = "f_pw"; S.anim = true; render(); toTop(); return true; }
     if (a === "openload") { S.modal = t.dataset.key; render(); return true; }
     if (a === "closemodal") { if (ev.target === t || t.tagName === "BUTTON") { S.modal = ""; render(); } return true; }
     if (a === "edit") { startEdit(t.dataset.f); return true; }
@@ -798,7 +1210,7 @@
       return true;
     }
     if (a === "openchat") { openChat(t.dataset.p); return true; }
-    if (a === "chatback") { S.peer = ""; S.anim = true; render(); window.scrollTo(0, 0); return true; }
+    if (a === "chatback") { S.peer = ""; S.anim = true; render(); toTop(); return true; }
     if (a === "play") { playVoice(+t.dataset.id); return true; }
     if (a === "msgsel") { var id = +t.dataset.id; S.sel = S.sel === id ? 0 : id; updateThread(); return true; }
     if (a === "msgdel") { var did = +t.dataset.id; S.sel = 0; (did >= 1000000000 ? authed("jumper_dm_delete", { p_id: did - 1000000000 }).then(function () { return refreshDm(); }) : authed("jumper_delete_msg", { p_id: did }).then(function () { return refreshMsgs(); })).then(updateThread).catch(function () { toast(tx("fail")); }); ev.stopPropagation(); return true; }
@@ -812,6 +1224,16 @@
     if (a === "sosgo") { sendSos(); return true; }
     return false;
   }
+  function setVh() {
+    var h = window.innerHeight, vv = window.visualViewport, top = 0;
+    if (vv && vv.height > h) h = vv.height;
+    if (vv && S.sess && S.tab === "msgs" && chatOpen() && vv.height > 200) { h = vv.height; top = vv.offsetTop; }
+    if (h > 200) document.documentElement.style.setProperty("--vh", h + "px");
+    document.documentElement.style.setProperty("--vt", top + "px");
+  }
+  setVh(); window.addEventListener("resize", setVh); window.addEventListener("orientationchange", function () { setTimeout(setVh, 250); }); if (window.visualViewport) { window.visualViewport.addEventListener("resize", function () { setVh(); if (S.tab === "msgs" && chatOpen() && !S.userScrolled) setTimeout(thrEnd, 50); }); window.visualViewport.addEventListener("scroll", function () { if (S.tab === "msgs" && chatOpen()) { setVh(); window.scrollTo(0, 0); } }); }
+  [150, 500, 1200, 2500, 5000].forEach(function (ms) { setTimeout(setVh, ms); });
+  function toTop() { window.scrollTo(0, 0); var p = document.querySelector(".page"); if (p) p.scrollTop = 0; }
   var BG = { n: 10, i: 0, t: 0, el: null };
   function bgApply() {
     var on = lsGet("mj_bg", true);
@@ -820,13 +1242,13 @@
     var box = document.createElement("div"); box.id = "bgs"; box.setAttribute("aria-hidden", "true");
     for (var i = 1; i <= BG.n; i++) { var e = document.createElement("i"); e.setAttribute("data-s", "hero/q" + i + ".webp"); box.appendChild(e); }
     document.body.insertBefore(box, document.body.firstChild); BG.el = box; BG.i = Math.floor(Math.random() * BG.n);
-    function show() { var els = box.children, el = els[BG.i]; if (!el.style.backgroundImage) el.style.backgroundImage = 'url("' + el.getAttribute("data-s") + '")'; for (var j = 0; j < els.length; j++) els[j].classList.toggle("on", j === BG.i); var nx = els[(BG.i + 1) % BG.n]; if (!nx.style.backgroundImage) nx.style.backgroundImage = 'url("' + nx.getAttribute("data-s") + '")'; }
+    function show() { var els = box.children, el = els[BG.i]; if (!el.style.backgroundImage) el.style.backgroundImage = 'url("' + el.getAttribute("data-s") + '")'; for (var j = 0; j < els.length; j++) { if (j === BG.i) { els[j].classList.remove("lv"); els[j].classList.add("on"); } else if (els[j].classList.contains("on")) { els[j].classList.remove("on"); els[j].classList.add("lv"); (function (x) { setTimeout(function () { x.classList.remove("lv"); }, 2900); })(els[j]); } } var nx = els[(BG.i + 1) % BG.n]; if (!nx.style.backgroundImage) nx.style.backgroundImage = 'url("' + nx.getAttribute("data-s") + '")'; }
     show(); BG.t = setInterval(function () { BG.i = (BG.i + 1) % BG.n; show(); }, 7000);
   }
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "19";
+  var APPV = "35";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
@@ -842,14 +1264,17 @@
   }
   function render() {
     document.documentElement.lang = L; document.documentElement.dir = L === "fa" ? "rtl" : "ltr";
+    var pgEl = document.querySelector(".page"), keepTop = pgEl ? pgEl.scrollTop : 0;
+    var thOld = document.getElementById("thr"), keepThr = thOld ? thOld.scrollTop : 0, hadThr = !!thOld, atEnd = thOld ? thOld.scrollTop + thOld.clientHeight >= thOld.scrollHeight - 40 : false;
     var keepMsg = document.getElementById("mt") ? document.getElementById("mt").value : "";
     var keepR = document.getElementById("lr") ? document.getElementById("lr").checked : true, keepU = document.getElementById("lu") ? document.getElementById("lu").value : "", keepP = document.getElementById("lp") ? document.getElementById("lp").value : "";
     $app.innerHTML = S.sess ? viewShell() : (S.mode === "forgot" ? viewForgot() : viewLogin());
     if (keepMsg && document.getElementById("mt")) document.getElementById("mt").value = keepMsg;
     if (!S.sess && document.getElementById("lr")) document.getElementById("lr").checked = keepR;
     if (!S.sess) { if (keepU) document.getElementById("lu").value = keepU; if (keepP) document.getElementById("lp").value = keepP; }
-    S.anim = false; fixDigits($app); bgApply();
-    if (S.tab === "msgs" && S.sess && S.peer && S.peer !== "pick") { chatToggle(); voxRefresh(); var th = document.querySelector(".thread"); if (th && th.lastElementChild) th.lastElementChild.scrollIntoView({ block: "end" }); }
+    var pgNew = document.querySelector(".page"); if (pgNew && keepTop) pgNew.scrollTop = keepTop;
+    setVh(); S.anim = false; fixDigits($app); bgApply();
+    if (S.tab === "msgs" && S.sess && chatOpen()) { chatToggle(); voxRefresh(); var th = document.getElementById("thr"); if (th) { if (S.noscroll && hadThr) th.scrollTop = keepThr; else { S.userScrolled = false; thrEndSoon(); } } } S.noscroll = false;
   }
 
   /* ---------- events ---------- */
@@ -857,7 +1282,7 @@
     var t = ev.target.closest("[data-lang],[data-tab],[data-folder],[data-act]"); if (!t) return;
     if (t.dataset.lang) return setLang(t.dataset.lang);
     if (t.dataset.tab) return setTab(t.dataset.tab);
-    if (t.dataset.folder) { S.view = t.dataset.folder; S.anim = true; S.err = ""; S.edit = null; if (S.view === "f_log") refreshLog().then(render); render(); return window.scrollTo(0, 0); }
+    if (t.dataset.folder) { S.view = t.dataset.folder; S.anim = true; S.err = ""; S.edit = null; if (S.view === "f_log") refreshLog().then(render); render(); return toTop(); }
     var a = t.dataset.act;
     if (a && handleAct(a, t, ev)) return;
     if (a === "forgot") { ev.preventDefault(); S.mode = "forgot"; S.err = ""; S.forgotCode = ""; render(); } else if (a === "tologin") { ev.preventDefault(); S.mode = ""; S.err = ""; render(); } else if (a === "back") { S.view = ""; S.edit = null; render(); } else if (a === "logout") signOut(); else if (a === "notif") askNotif();
@@ -880,7 +1305,7 @@
       var chs = collectChanges(S.edit.folder);
       if (!chs.length) { S.edit.err = tx("no_change"); return render(); }
       if (chs.some(function (c) { return c.k === "bloodType"; }) && !S.edit.bf) { S.edit.err = tx("blood_need"); return render(); }
-      S.edit.err = ""; S.edit.changes = chs; S.edit.review = true; render(); window.scrollTo(0, 0);
+      S.edit.err = ""; S.edit.changes = chs; S.edit.review = true; render(); toTop();
     } else if (ev.target.id === "mf") { var ta = document.getElementById("mt"), v = ta.value.trim(); if (!v) return; ta.value = ""; chatToggle(); chatPost(v).catch(function (e) { ta.value = v; toast(/slow_down/.test(e.code || "") ? tx("fail") : tx("fail")); }); }
   });
   function onEditInput(ev) {
@@ -900,6 +1325,10 @@
 
   /* ---------- start ---------- */
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+  function hideBoot() { var b = document.getElementById("boot"); if (!b) return; b.classList.add("out"); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 600); }
+  var t0 = Date.now(), MINB = 2000, bootDone = false;
+  function finishBoot() { if (bootDone) return; bootDone = true; var w = MINB - (Date.now() - t0); setTimeout(hideBoot, w > 0 ? w : 0); }
   render();
-  if (S.sess) { refreshAll().then(startPolling); }
+  setTimeout(finishBoot, 6000);
+  if (S.sess) { var rp = refreshAll(); rp.then(startPolling); rp.then(finishBoot, finishBoot); } else finishBoot();
 })();
