@@ -1230,6 +1230,10 @@
     if (vv && S.sess && S.tab === "msgs" && chatOpen() && vv.height > 200) { h = vv.height; top = vv.offsetTop; }
     if (h > 200) document.documentElement.style.setProperty("--vh", h + "px");
     document.documentElement.style.setProperty("--vt", top + "px");
+    /* iPhone home-screen app: if the page stops short of the real screen bottom, stretch the app down to it */
+    var gap = 0;
+    try { if (window.navigator.standalone && window.screen && window.screen.height && !chatOpen()) { var sh = Math.max(screen.height, screen.width) === screen.height ? screen.height : screen.width; var ih = window.innerHeight; if (window.matchMedia("(orientation: portrait)").matches && sh - ih > 0 && sh - ih < 80) gap = sh - ih; } } catch (e) { gap = 0; }
+    document.documentElement.style.setProperty("--gap", gap + "px");
   }
   setVh(); window.addEventListener("resize", setVh); window.addEventListener("orientationchange", function () { setTimeout(setVh, 250); }); if (window.visualViewport) { window.visualViewport.addEventListener("resize", function () { setVh(); if (S.tab === "msgs" && chatOpen() && !S.userScrolled) setTimeout(thrEnd, 50); }); window.visualViewport.addEventListener("scroll", function () { if (S.tab === "msgs" && chatOpen()) { setVh(); window.scrollTo(0, 0); } }); }
   [150, 500, 1200, 2500, 5000].forEach(function (ms) { setTimeout(setVh, ms); });
@@ -1248,7 +1252,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "35";
+  var APPV = "36";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();

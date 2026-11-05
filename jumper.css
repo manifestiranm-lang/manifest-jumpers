@@ -687,3 +687,12 @@ html[dir=rtl] .c2-cd { left: 14px; }
 html[dir=ltr] .c2-cd { right: 14px; }
 .logt .lr.ldh { grid-template-columns: 1fr auto; background: rgba(255,255,255,.06); border-radius: 8px; padding: 6px 10px; margin-top: 6px; font-size: 13px; }
 .logt .lr.ldh span { justify-self: end; color: #cfe0d6; }
+
+/* ===== v36: iPhone home-screen app — menu sits at the very bottom ===== */
+:root { --gap: 0px; }
+@supports (-webkit-touch-callout: none) {
+  .shell { bottom: calc(-1 * var(--gap)); }
+  .shell:has(.chatwrap) { bottom: auto; }
+  .tabs { min-height: 0; padding: 4px 6px calc(max(4px, env(safe-area-inset-bottom, 0px) - 22px) + var(--gap)); position: relative; }
+  .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 140px; background: #0b130e; pointer-events: none; }
+}

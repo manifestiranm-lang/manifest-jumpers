@@ -1,5 +1,5 @@
 /* Manifest portal service worker: makes the app installable and keeps the shell available offline. Data always comes live from the network. */
-const CACHE = "manifest-portal-v20";
+const CACHE = "manifest-portal-v21";
 const SHELL = ["./", "index.html", "jumper.css", "jumper.js", "config.js", "logo.png", "icon-192.png", "icon-512.png", "mali.ttf", "mali-semibold.ttf", "calibri.ttf", "calibrib.ttf"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
