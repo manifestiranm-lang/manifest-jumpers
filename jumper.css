@@ -713,3 +713,15 @@ html[dir=ltr] .c2-cd { right: 14px; }
 .shell .card, .shell .folder, .shell .note, .shell .crow, .shell .chathead,
 .shell .card.c2, .shell .card.wx4, .shell .card.lstats, .shell .card.logt, .shell .logt { --panel: rgba(14,24,19,.76); }
 .card.lstats, .card.logt, .logt, .card:has(.logt) { background: rgba(14,24,19,.76) !important; }
+
+/* ===== v41: iPhone chat reaches the bottom too; full-screen standby stamp ===== */
+@supports (-webkit-touch-callout: none) {
+  .shell:has(.chatwrap) { height: calc(var(--vh, 100dvh) + var(--gap)) !important; }
+  .chatwrap .compose { padding-bottom: calc(max(4px, env(safe-area-inset-bottom, 0px) - 26px) + var(--gap)) !important; }
+}
+.stampfull { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; overflow: hidden; }
+.stampfull .stamp { padding: 14px 30px; border-width: 8px; border-radius: 22px; opacity: .72; transform: rotate(-14deg); animation: stampbig .8s cubic-bezier(.2,1.2,.3,1) both; box-shadow: inset 0 0 0 3px rgba(224,85,74,.35), 0 0 40px rgba(224,85,74,.25); }
+.stampfull .stamp.still { animation: none; }
+.stampfull .stamp b { font-size: min(21vw, 110px); letter-spacing: .06em; line-height: 1.05; }
+.stampfull .stamp small { font-size: min(4.2vw, 20px); letter-spacing: .2em; }
+@keyframes stampbig { 0% { opacity: 0; transform: rotate(-14deg) scale(3.6); } 60% { opacity: .85; transform: rotate(-14deg) scale(.9); } 80% { transform: rotate(-14deg) scale(1.04); } 100% { opacity: .72; transform: rotate(-14deg) scale(1); } }

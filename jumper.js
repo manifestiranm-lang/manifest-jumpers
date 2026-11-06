@@ -440,7 +440,7 @@
     var w = String(full || "").trim().split(/\s+/); if (w.length < 2) return w[0] || "";
     return L === "fa" ? w.slice(1).join(" ") : w[0].charAt(0).toUpperCase() + ". " + w.slice(1).join(" ");
   }
-  function jtAb(v) { var k = String(v || "").trim(), m = { belly: "BF", tracking: "TRK", freefly: "FF", wingsuit: "WS", "canopy piloting": "CP", "canopy formation": "CF", "coach jump": "CJ", "camera flyer": "CAMERA", accuracy: "ACCURACY", tandem: "TM", "tandem student": "TM ST", solo: "SOLO" }; return m[k.toLowerCase()] || k; }
+  function jtAb(v) { var k = String(v || "").trim(), m = { belly: "BF", tracking: "TRK", freefly: "FF", wingsuit: "WS", "canopy piloting": "CP", "canopy formation": "CF", "coach jump": "CJ", "camera flyer": "CAMERA", accuracy: "AC", tandem: "TM", "tandem student": "TM ST", solo: "SOLO" }; return m[k.toLowerCase()] || k; }
   function noCam(v) { return String(v === null || v === undefined ? "" : v).replace(/[\u{1F4F7}\u{1F4F8}\u{1F4F9}\u{1F3A5}\u{1F3A6}\u{1F4FD}\uFE0F]/gu, "").replace(/\s+/g, " ").trim(); }
   function licNo(v) { v = noCam(v); if (!v) return "—"; v = v.replace(/^\(?\s*[A-Za-z]{3,}\)?[\s:\-–]+/, "").replace(/^\(?\s*[A-Za-z]{3,}\)?\s+(?=[A-Za-z]-?\d)/, ""); return v || "—"; }
   function loadModal() {
@@ -458,7 +458,6 @@
   function viewLoads() {
     var all = loadsFlat(), today = todayTehran(), todays = all.filter(function (x) { return x.date === today; });
     var mine = todays.filter(function (x) { return isMine(x.l); }), h = weatherCard();
-    if (isStandby(todays)) { h += '<div class="stampwrap"><div class="stamp' + (S.stampSeen ? " still" : "") + '"><b>' + (L === "fa" ? "استندبای" : "STANDBY") + "</b><small>" + (L === "fa" ? "همهٔ لودها متوقف" : "ALL LOADS ON HOLD") + "</small></div></div>"; if (!S.stampSeen) setTimeout(function () { S.stampSeen = true; }, 1500); } else S.stampSeen = false;
     if (S.loadedAt) h += '<p class="muted">' + tx("upd") + ": " + clockTxt(S.loadedAt) + " · " + tx("today") + " " + dateTxt(today) + "</p>";
     if (!todays.length) return h + '<div class="empty">' + tx("loads_none") + "</div>";
     if (mine.length) h += '<div class="h2">' + tx("loads_mine") + "</div>" + mine.map(loadCard).join("");
@@ -1234,7 +1233,7 @@
     document.documentElement.style.setProperty("--vt", top + "px");
     /* iPhone home-screen app: if the page stops short of the real screen bottom, stretch the app down to it */
     var gap = 0;
-    try { if (window.navigator.standalone && window.screen && window.screen.height && !chatOpen()) { var sh = Math.max(screen.height, screen.width) === screen.height ? screen.height : screen.width; var ih = window.innerHeight; if (window.matchMedia("(orientation: portrait)").matches && sh - ih > 0 && sh - ih < 80) gap = sh - ih; } } catch (e) { gap = 0; }
+    try { if (window.navigator.standalone && window.screen && window.screen.height && !(vv && vv.height < window.innerHeight - 120)) { var sh = Math.max(screen.height, screen.width) === screen.height ? screen.height : screen.width; var ih = window.innerHeight; if (window.matchMedia("(orientation: portrait)").matches && sh - ih > 0 && sh - ih < 80) gap = sh - ih; } } catch (e) { gap = 0; }
     document.documentElement.style.setProperty("--gap", gap + "px");
   }
   setVh(); window.addEventListener("resize", setVh); window.addEventListener("orientationchange", function () { setTimeout(setVh, 250); }); if (window.visualViewport) { window.visualViewport.addEventListener("resize", function () { setVh(); if (S.tab === "msgs" && chatOpen() && !S.userScrolled) setTimeout(thrEnd, 50); }); window.visualViewport.addEventListener("scroll", function () { if (S.tab === "msgs" && chatOpen()) { setVh(); window.scrollTo(0, 0); } }); }
@@ -1254,13 +1253,19 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "40";
+  var APPV = "41";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
     return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + '</b><span class="topdate">' + topDate() + "</span>" + (forced ? langSwitch() : "") + '<button class="iconbtn bellbtn' + (nA ? " has" : "") + '" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
-      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + "</div>";
+      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + stampFull() + "</div>";
+  }
+  function stampFull() {
+    if (!S.sbOn || !S.sess || chatOpen()) { if (!S.sbOn) S.stampSeen = false; return ""; }
+    var h = '<div class="stampfull" aria-hidden="true"><div class="stamp' + (S.stampSeen ? " still" : "") + '"><b>' + (L === "fa" ? "استندبای" : "STANDBY") + "</b><small>" + (L === "fa" ? "همهٔ لودها متوقف" : "ALL LOADS ON HOLD") + "</small></div></div>";
+    if (!S.stampSeen) setTimeout(function () { S.stampSeen = true; }, 1500);
+    return h;
   }
   var NOFIX = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION)$/;
   function fixDigits(root) {
