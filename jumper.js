@@ -1253,7 +1253,7 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "41";
+  var APPV = "42";
   function viewShell() {
     BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
@@ -1262,8 +1262,8 @@
       (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + stampFull() + "</div>";
   }
   function stampFull() {
-    if (!S.sbOn || !S.sess || chatOpen()) { if (!S.sbOn) S.stampSeen = false; return ""; }
-    var h = '<div class="stampfull" aria-hidden="true"><div class="stamp' + (S.stampSeen ? " still" : "") + '"><b>' + (L === "fa" ? "استندبای" : "STANDBY") + "</b><small>" + (L === "fa" ? "همهٔ لودها متوقف" : "ALL LOADS ON HOLD") + "</small></div></div>";
+    if (!S.sbOn || !S.sess || S.tab !== "loads" || chatOpen()) { if (!S.sbOn) S.stampSeen = false; return ""; }
+    var h = '<div class="stampfull" aria-hidden="true"><svg width="0" height="0" style="position:absolute" focusable="false"><filter id="inkRough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="8" result="rough"/><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="8" result="grain"/><feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  9 0 0 0 -2.9" result="holes"/><feComposite in="rough" in2="holes" operator="in"/></filter></svg><div class="stamp' + (S.stampSeen ? " still" : "") + '"><b>' + (L === "fa" ? "استندبای" : "STANDBY") + "</b></div></div>";
     if (!S.stampSeen) setTimeout(function () { S.stampSeen = true; }, 1500);
     return h;
   }

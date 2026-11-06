@@ -725,3 +725,11 @@ html[dir=ltr] .c2-cd { right: 14px; }
 .stampfull .stamp b { font-size: min(21vw, 110px); letter-spacing: .06em; line-height: 1.05; }
 .stampfull .stamp small { font-size: min(4.2vw, 20px); letter-spacing: .2em; }
 @keyframes stampbig { 0% { opacity: 0; transform: rotate(-14deg) scale(3.6); } 60% { opacity: .85; transform: rotate(-14deg) scale(.9); } 80% { transform: rotate(-14deg) scale(1.04); } 100% { opacity: .72; transform: rotate(-14deg) scale(1); } }
+
+/* ===== v42: real rubber-stamp look, loads tab only, no small text ===== */
+.stampfull .stamp { border: 9px solid #d9453a; color: #d9453a; background: rgba(217,69,58,.07); border-radius: 20px; opacity: .82; padding: 8px 26px;
+  box-shadow: inset 0 0 0 4px transparent, inset 0 0 0 6px #d9453a, inset 0 0 26px rgba(217,69,58,.25); filter: url(#inkRough); animation: stampdrop .55s cubic-bezier(.3,0,.2,1) both; }
+.stampfull .stamp.still { animation: none; }
+.stampfull .stamp small { display: none; }
+@keyframes stampdrop { 0% { opacity: 0; transform: rotate(-18deg) scale(3.4); } 55% { opacity: .95; transform: rotate(-14deg) scale(.94); } 72% { transform: rotate(-14deg) scale(1.03); } 100% { opacity: .82; transform: rotate(-14deg) scale(1); } }
+.stampfull .stamp b { font-size: min(15vw, 90px) !important; }
