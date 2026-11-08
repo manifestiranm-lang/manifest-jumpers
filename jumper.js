@@ -4,7 +4,7 @@
   var CFG = window.REG_CONFIG;
   var $app = document.getElementById("app");
   var VAPID = "BEX0-dBPiLfKJY0OfSjTi7OH2_0dLM6mti1VtiP8U0Pq20RvYALIJqGH9QoH_ymInGDPtV0EBrjIbs2_4ei0W9w";
-  var LSK = { lang: "mj_lang", sess: "mj_session", notes: "mj_notes", prev: "mj_prev", fired: "mj_fired", seenMsg: "mj_seen_msg", tab: "mj_tab" };
+  var LSK = { lang: "mj_lang", sess: "mj_session", notes: "mj_notes", prev: "mj_prev", fired: "mj_fired", seenMsg: "mj_seen_msg", tab: "mj_tab", dz: "mj_dz" };
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
 
@@ -15,7 +15,29 @@
 
   /* ---------- texts ---------- */
   var TX = {
-    app: ["Manifest", "Manifest"], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], p_slot: ["اسلات", "Slot"], p_name: ["نام", "Name"], p_det: ["جزئیات", "Details"], p_empty: ["اسلات خالی", "Empty slots"], p_cap: ["ظرفیت", "Capacity"], p_ac: ["هواپیما", "Aircraft"], p_pur: ["نوع لود", "Load type"], reg_acct: ["ساخت حساب کاربری", "Create an account"], reg_q: ["حساب کاربری ندارید؟", "Don't have an account?"], sos_btn_t: ["درخواست کمک اضطراری", "Emergency help"], sos_sub: ["ارسال موقعیت مکانی برای مسئولان منیفست", "Send your location to Manifest staff"], blood_need: ["برای تغییر گروه خونی، عکس یا PDF آزمایش خون را هم بفرستید.", "To change your blood type, also attach a photo or PDF of the blood test."], blood_file: ["آزمایش خون (عکس یا PDF)", "Blood test (photo or PDF)"], blood_hint: ["برای تغییر گروه خونی لازم است.", "Required to change blood type."], blood_pick: ["انتخاب فایل", "Choose file"], blood_big: ["فایل باید عکس یا PDF و کمتر از ۵ مگابایت باشد.", "File must be a photo or PDF under 5 MB."], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
+    sm_ci: ["چک‌این", "Check in"], sm_ci_ok: ["چک‌این شدی ✓", "Checked in ✓"], sm_ci_undo: ["لغو چک‌این", "Undo"], sm_ci_need: ["برای ثبت در لود اول چک‌این کن.", "Check in first to be added to a load."],
+    sm_ci_else: ["امروز در دراپ‌زون دیگری چک‌این شده‌ای.", "You are checked in at another drop zone today."],
+    sm_f_mode: ["نوع پرش", "Jump type"], sm_f_disc: ["رشته پرش", "Discipline"], pk_sel: ["انتخاب از لیست جامپرها…", "Pick from the jumper list…"], sm_solo: ["تکی", "Solo"], sm_group: ["گروهی", "Group"], sm_disc: ["رشته", "Discipline"], sm_exit: ["ارتفاع", "Altitude"], sm_full: ["ارتفاع کامل", "Full altitude"], sm_hop: ["Hop & Pop", "Hop & Pop"],
+    sm_trk: ["موقعیت خروج Tracking", "Tracking exit position"], sm_mem: ["هم‌گروهی‌ها (چک‌این‌شده‌های گروه‌های چت شما)", "Group members (checked-in people from your chat groups)"], sm_nomem: ["هنوز کسی دیگر چک‌این نکرده است.", "Nobody else has checked in yet."],
+    sm_go: ["ارسال برای مانیفست", "Send to manifest"], sm_cancel: ["انصراف", "Cancel"], sm_e_need_checkin: ["اول چک‌این کن.", "Check in first."], sm_e_busy: ["شما همین حالا روی یک لود دیگر هستید.", "You are already on another load."],
+    sm_e_busy_member: ["یکی از هم‌گروهی‌ها روی لود دیگری است.", "A group member is already on another load."], sm_e_bad_member: ["یکی از هم‌گروهی‌ها چک‌این نیست.", "A group member is not checked in."], sm_e_checked_elsewhere: ["امروز در دراپ‌زون دیگری چک‌این شده‌ای.", "Checked in at another drop zone."],
+    sm_e_bad_opts: ["گزینه‌ها درست نیست.", "Invalid options."], sm_e_too_many: ["تعداد زیاد است.", "Too many people."], sm_e_group: ["حداقل یک هم‌گروهی انتخاب کن.", "Pick at least one group member."],
+    sm_edit: ["ویرایش پرش من", "Edit my jump"], sm_team: ["تیم", "Team"], sm_newteam: ["＋ تیم جدید", "＋ New team"], sm_pick: ["هم‌گروهی‌ها (چک‌این‌شده‌ها)", "Team members (checked in)"], sm_people: ["نفر", "people"], sm_delteam: ["حذف این تیم", "Delete this team"],
+    sm_done: ["به لود {n} اضافه شدید ✓", "You were added to load {n} ✓"], sm_done2: ["ترتیب خروج (Exit order) خود را بررسی کنید.", "Check your exit order."], sm_done_e: ["پرش شما در لود {n} تغییر کرد ✓", "Your jump on load {n} was updated ✓"], sm_ord: ["ترتیب خروج شما:", "Your exit order:"],
+    sm_save: ["ثبت تغییر", "Save changes"],
+    sm_ci_on_h: ["امروز چک‌این شده‌اید", "You are checked in today"], sm_ci_off_h: ["برای ثبت خود در لود، اول چک‌این کنید", "Check in to add yourself to a load"],
+    sm_add: ["ثبت من در این لود", "Add me to this load"], sm_rem: ["حذف من از این لود", "Remove me from this load"], sm_grp: ["ثبت گروه:", "Add group:"],
+    sm_sent: ["درخواست ارسال شد؛ منتظر تأیید مانیفست…", "Request sent — waiting for manifest…"], sm_off: ["ثبت خودکار فعلاً توسط مانیفست غیرفعال است.", "Self-manifesting is turned off by manifest right now."],
+    sm_late: ["کمتر از ۱۰ دقیقه به پرواز مانده؛ ثبت در این لود بسته شد.", "Less than 10 minutes to takeoff — adding is closed."], sm_only: ["ثبت خودکار فقط برای اسکای‌دایورها است.", "Self-manifesting is for Skydivers only."], sm_ok: ["ارسال شد ✓", "Sent ✓"],
+    sm_e_self_off: ["ثبت خودکار غیرفعال است.", "Self-manifesting is off."], sm_e_not_skydiver: ["فقط اسکای‌دایورها می‌توانند.", "Skydivers only."], sm_e_slow_down: ["کمی صبر کنید و دوباره امتحان کنید.", "Slow down, try again shortly."],
+    sm_e_closed: ["این لود بسته است.", "This load is closed."], sm_e_full: ["لود پر است.", "The load is full."], sm_e_net: ["اتصال برقرار نیست.", "No connection."], sm_e_x: ["انجام نشد.", "Could not do it."],
+    app: ["Manifest", "Manifest"],
+    revision: ["فرم ثبت‌نام شما برای اصلاح برگشت داده شده است. روی «اصلاح ثبت‌نام» بزنید.", "Your registration was sent back for corrections. Tap “Fix my registration”."],
+    fixreg: ["اصلاح ثبت‌نام", "Fix my registration"], created: ["Created by Mostafa Narouei", "Created by Mostafa Narouei"],
+    dz_pick: ["رویداد / دراپ‌زون", "Event / drop zone"], cd_h: ["وضعیت کارت‌ها", "Conduct cards"], cd_none: ["کارت زرد یا قرمز ندارید.", "You have no yellow or red card."],
+    cd_y: ["کارت زرد", "Yellow card"], cd_y2: ["کارت زرد دوم", "Second yellow card"], cd_r: ["کارت قرمز", "Red card"], cd_why: ["علت", "Reason"], cd_since: ["از تاریخ", "Since"], cd_until: ["تا تاریخ", "Until"],
+    cd_open: ["تا اطلاع بعدی", "Until further notice"], cd_left: ["{d} روز مانده", "{d} days left"], cd_today: ["فقط امروز", "Today only"], cd_has_y: ["یک کارت زرد دارید", "You have one yellow card"], cd_has_y2: ["دو کارت زرد دارید", "You have two yellow cards"], cd_has_r: ["کارت قرمز دارید", "You have a red card"], cd_untoday: ["تا امروز", "Until today"], cd_noreason: ["علتی ثبت نشده است.", "No reason recorded."],
+    cd_ban: ["مدت محرومیت", "Ban duration"], cd_note: ["کارت‌ها را مسئول منیفست در برنامه ثبت می‌کند.", "Cards are given by the manifest staff."], chat_title: ["منیفست", "Manifest"], dm_title: ["گفتگوها", "Chats"], p_slot: ["اسلات", "Slot"], p_name: ["نام", "Name"], p_det: ["جزئیات", "Details"], p_empty: ["اسلات خالی", "Empty slots"], p_cap: ["ظرفیت", "Capacity"], p_ac: ["هواپیما", "Aircraft"], p_pur: ["نوع لود", "Load type"], reg_acct: ["ساخت حساب کاربری", "Create an account"], reg_q: ["حساب کاربری ندارید؟", "Don't have an account?"], sos_btn_t: ["درخواست کمک اضطراری", "Emergency help"], sos_sub: ["ارسال موقعیت مکانی برای مسئولان منیفست", "Send your location to Manifest staff"], blood_need: ["برای تغییر گروه خونی، عکس یا PDF آزمایش خون را هم بفرستید.", "To change your blood type, also attach a photo or PDF of the blood test."], blood_file: ["آزمایش خون (عکس یا PDF)", "Blood test (photo or PDF)"], blood_hint: ["برای تغییر گروه خونی لازم است.", "Required to change blood type."], blood_pick: ["انتخاب فایل", "Choose file"], blood_big: ["فایل باید عکس یا PDF و کمتر از ۵ مگابایت باشد.", "File must be a photo or PDF under 5 MB."], dm_new: ["گفتگوی تازه", "New chat"], dm_search: ["جستجوی نام جامپر…", "Search a jumper…"], dm_none: ["جامپری پیدا نشد.", "No jumpers found."], dm_sub: ["با دیگر جامپرها گفتگو کنید", "Chat with other jumpers"], dm_empty: ["هنوز گفتگویی با جامپرها ندارید.", "No jumper chats yet."], dm_hello: ["هنوز پیامی نیست. سلام کنید!", "No messages yet. Say hi!"], back: ["بازگشت", "Back"], chat_sub: ["پیام، عکس، فایل و پیام صوتی بفرستید", "Send messages, photos, files and voice"], today: ["امروز", "Today"], yesterday: ["دیروز", "Yesterday"], rec_no: ["این مرورگر ضبط صدا را پشتیبانی نمی‌کند.", "This browser cannot record audio."], rec_deny: ["دسترسی به میکروفن داده نشد.", "Microphone access was denied."], big15: ["حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.", "The file must be 15 MB or smaller."], badtype: ["این نوع فایل پشتیبانی نمی‌شود.", "This file type is not supported."], del_msg: ["حذف پیام", "Delete message"], sys_sos: ["SOS ارسال شد", "SOS sent"], sys_edit: ["درخواست ویرایش اطلاعات ارسال شد", "Profile edit request sent"], sys_reset: ["درخواست رمز جدید ارسال شد", "Password reset request sent"], voice_lbl: ["پیام صوتی", "Voice message"], photo_lbl: ["عکس", "Photo"], sub: ["پنل اسکای‌دایور", "Skydiver portal"],
     user: ["نام کاربری (کد ملی یا شماره پاسپورت)", "Username (national ID or passport number)"], pass: ["رمز ورود", "Password"],
     login: ["ورود", "Sign in"], reg: ["ثبت‌نام ندارید؟ ثبت‌نام", "No account? Register"], logout: ["خروج", "Sign out"],
     bad_login: ["نام کاربری یا رمز درست نیست.", "Wrong username or password."], locked: ["تلاش‌های زیاد. ۱۵ دقیقه دیگر دوباره امتحان کنید.", "Too many tries. Try again in 15 minutes."],
@@ -199,9 +221,9 @@
     if ("serviceWorker" in navigator) navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) { if (sub) { var ep = sub.endpoint; return sub.unsubscribe().then(function () { if (S.sess) return authed("jumper_push_del", { p_endpoint: ep }); }); } }).catch(function () {});
     idbPut(null); render();
   }
-  function addNote(id, key, vars, icon) {
+  function addNote(id, key, vars, icon, go) {
     if (S.notes.some(function (n) { return n.id === id; })) return;
-    S.notes.unshift({ id: id, key: key, vars: vars || {}, icon: icon || "🔔", at: Date.now(), read: false });
+    S.notes.unshift({ id: id, key: key, vars: vars || {}, icon: icon || "🔔", at: Date.now(), read: false, go: go || null });
     saveNotes();
     beep();
     if (key === "n_call" && vars) setTimeout(function () { speakCall(vars.n, vars.m); }, 700);
@@ -228,15 +250,15 @@
       cur[key] = { m: mine, st: l.st };
       if (prev && S.me && S.me.uid) {
         var p = prev[key];
-        if (mine && !(p && p.m)) addNote("add-" + key + "-" + Math.floor(Date.now() / 60000), "n_add", { n: l.n }, "✅");
-        if (!mine && p && p.m) addNote("rem-" + key + "-" + Math.floor(Date.now() / 60000), "n_rem", { n: l.n }, "⚠️");
-        if (mine && p && p.st !== l.st) { if (l.st === "Boarding") addNote("brd-" + key, "n_board", { n: l.n }, "🛫"); if (l.st === "Hold") addNote("hold-" + key + "-" + Math.floor(Date.now() / 60000), "n_hold", { n: l.n }, "⏸️"); }
+        if (mine && !(p && p.m)) addNote("add-" + key + "-" + Math.floor(Date.now() / 60000), "n_add", { n: l.n }, "✅", { tab: "loads" });
+        if (!mine && p && p.m) addNote("rem-" + key + "-" + Math.floor(Date.now() / 60000), "n_rem", { n: l.n }, "⚠️", { tab: "loads" });
+        if (mine && p && p.st !== l.st) { if (l.st === "Boarding") addNote("brd-" + key, "n_board", { n: l.n }, "🛫", { tab: "loads" }); if (l.st === "Hold") addNote("hold-" + key + "-" + Math.floor(Date.now() / 60000), "n_hold", { n: l.n }, "⏸️", { tab: "loads" }); }
       }
       if (mine && l.cs === "Running") {
         var r = remaining(l);
         [1200, 900, 600].forEach(function (th) {
           var fk = key + "#" + th;
-          if (r <= th && r > th - 420 && !fired[fk]) { fired[fk] = 1; addNote("call-" + fk, "n_call", { n: l.n, m: th / 60 }, "⏰"); }
+          if (r <= th && r > th - 420 && !fired[fk]) { fired[fk] = 1; addNote("call-" + fk, "n_call", { n: l.n, m: th / 60 }, "⏰", { tab: "loads" }); }
         });
       }
     });
@@ -248,13 +270,13 @@
     if (p.reserve_repack_date && p.rig_ownership !== "Rental") { var d = new Date(p.reserve_repack_date + "T12:00:00Z"); if (!isNaN(d)) { d.setUTCDate(d.getUTCDate() + 180); items.push(["w_rep", d.toISOString().slice(0, 10)]); } }
     items.forEach(function (it) {
       var du = daysUntil(it[1]); if (du === null) return;
-      if (du < 0) addNote("exp-" + it[0] + "-" + it[1], "n_expd", { what: it[0] }, "❗");
-      else if (du <= 30) addNote("exp-" + it[0] + "-" + it[1] + "-" + (du <= 7 ? "w" : "m"), "n_exp", { what: it[0], d: du }, "⌛");
+      if (du < 0) addNote("exp-" + it[0] + "-" + it[1], "n_expd", { what: it[0] }, "❗", { tab: "me" });
+      else if (du <= 30) addNote("exp-" + it[0] + "-" + it[1] + "-" + (du <= 7 ? "w" : "m"), "n_exp", { what: it[0], d: du }, "⌛", { tab: "me" });
     });
   }
   function detectMessages() {
     var seen = lsGet(LSK.seenMsg, 0), max = seen;
-    S.msgs.forEach(function (m) { if (m.staff && m.id > seen) { addNote("msg-" + m.id, "n_msg", {}, "💬"); } if (m.id > max) max = m.id; });
+    S.msgs.forEach(function (m) { if (m.staff && m.id > seen) { addNote("msg-" + m.id, "n_msg", {}, "💬", { tab: "msgs", peer: "staff" }); } if (m.id > max) max = m.id; });
     if (seen === 0 && S.msgs.length === 0) return; lsSet(LSK.seenMsg, max);
   }
 
@@ -271,14 +293,14 @@
     var act = todays.filter(function (x) { return x.l.st !== "Completed" && x.l.st !== "Cancelled"; });
     return act.length > 0 && act.every(function (x) { return x.l.cs === "Hold"; });
   }
-  function refreshLoads() { return authed("jumper_loads").then(function (d) { var wasSb = S.sbOn; S.loads = normLoads(d || []); S.loadedAt = Date.now(); var nowSb = isStandby(loadsFlat().filter(function (x) { return x.date === todayTehran(); })); if (nowSb && wasSb === false) speakStandby(); S.sbOn = nowSb; detectEvents(); }).catch(function () {}); }
+  function refreshLoads() { if (S.sess && (!S.selfAt || Date.now() - S.selfAt > 15000)) refreshSelf(); if (!S.dzSel) S.dzSel = lsGetDz() || ""; if (!S.dzSel) { S.loads = normLoads([]); return Promise.resolve(); } return authed("jumper_loads", { p_dz: S.dzSel }).then(function (d) { var wasSb = S.sbOn; S.loads = normLoads(d || []); S.loadedAt = Date.now(); var nowSb = isStandby(loadsFlat().filter(function (x) { return x.date === todayTehran(); })); if (nowSb && wasSb === false) speakStandby(); S.sbOn = nowSb; detectEvents(); }).catch(function () {}); }
   function refreshMe() { return authed("jumper_me").then(function (d) { var sig = JSON.stringify(d), changed = sig !== S.meSig; S.meSig = sig; S.me = d; detectExpiry(); if (d && d.found && d.hasPhoto && !S.photo) { authed("jumper_photo").then(function (p) { S.photo = p || ""; render(); }).catch(function () {}); } return changed; }).catch(function () { return false; }); }
   function refreshMsgs() { return authed("jumper_messages_list2").then(function (d) { S.msgs = d || []; detectMessages(); if (S.tab === "msgs" && S.peer === "staff" && !document.hidden && unreadStaff() > 0) { authed("jumper_mark_read").then(function () { S.msgs.forEach(function (m) { if (m.staff) m.read = true; }); updateBadges(); }).catch(function () {}); } }).catch(function () {}); }
 
   function refreshDm() {
     return authed("jumper_dm_list2").then(function (d) {
       S.dm = d || []; var seen = lsGet("mj_seen_dm", 0), max = seen;
-      S.dm.forEach(function (m) { if (!m.mine && m.id > seen) addNote("dm-" + m.id, "n_dm", {}, "💬"); if (m.id > max) max = m.id; });
+      S.dm.forEach(function (m) { if (!m.mine && m.id > seen) addNote("dm-" + m.id, "n_dm", {}, "💬", { tab: "msgs", peer: m.peer }); if (m.id > max) max = m.id; });
       if (!(seen === 0 && S.dm.length === 0)) lsSet("mj_seen_dm", max);
       if (S.tab === "msgs" && isDm() && !document.hidden && unreadPeer(S.peer) > 0) { var pr = S.peer; authed("jumper_dm_read", { p_peer: pr }).then(function () { S.dm.forEach(function (m) { if (m.peer === pr && !m.mine) m.read = true; }); updateBadges(); }).catch(function () {}); }
     }).catch(function () {});
@@ -338,10 +360,34 @@
     presRefresh();
     if (p === "pick" || p === "gnew") refreshPeers().then(function () { var l = document.getElementById("plist"); if (l) l.innerHTML = p === "gnew" ? gpickList() : pickList(); });
   }
-  function refreshAll() { return Promise.all([refreshMe(), refreshLoads(), refreshMsgs(), refreshDm(), refreshPeers(), refreshGroups()]).then(function () { render(); }); }
+  function lsGetDz() { try { return JSON.parse(localStorage.getItem(LSK.dz) || "null") || ""; } catch (e) { return ""; } }
+  function dzAge(id) { var l = (S.dz && S.dz.list) || [], now = S.dz && S.dz.now ? Date.parse(S.dz.now) : Date.now(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return now - Date.parse(l[i].at); return Infinity; }
+  function dzOk(id) { var l = (S.dz && S.dz.list) || [], now = S.dz && S.dz.now ? Date.parse(S.dz.now) : Date.now(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return now - Date.parse(l[i].at) < 150000; return false; }
+  /* A drop zone choice is kept while that drop zone's desktop is open. When the desktop closes, the choice is dropped and the next visit asks again. */
+  function refreshDz() { return authed("jumper_dzs").then(function (d) { S.dz = d || { mine: "", list: [] }; if (!S.dzSel) S.dzSel = lsGetDz() || ""; if (S.dzSel && dzAge(S.dzSel) > 600000) { S.dzSel = ""; lsSet(LSK.dz, ""); S.loads = normLoads([]); } }).catch(function () {}); }
+  function dzName(id) { return id || ""; }
+  function dzBar() { return S.dzSel ? '<div class="dzbar"><span>📍</span><b>' + esc(S.dzSel) + "</b></div>" : ""; }
+  function viewDzPick() {
+    var l = (S.dz && S.dz.list) || [], any = false, h = '<div class="h2">' + tx("dz_h") + '</div><p class="muted small" style="margin:-4px 4px 12px">' + tx("dz_hint") + '</p><div class="dzlist">';
+    l.forEach(function (x) { var ok = dzOk(x.id); if (ok) any = true; h += '<button type="button" class="dzopt' + (ok ? "" : " off") + (x.id === S.dz.mine ? " mine" : "") + '" data-dzpick="' + esc(x.id) + '"><span class="dzdot"></span><b>' + esc(x.name) + "</b><small>" + tx(ok ? "dz_live" : "dz_off") + "</small></button>"; });
+    if (!l.length) h += '<p class="muted small">' + tx("dz_none") + "</p>";
+    return h + "</div>";
+  }
+  (function () { var N = { dz_h: ["الان در کدام دراپ‌زون هستید؟", "Which drop zone are you at right now?"], dz_hint: ["یکی را انتخاب کنید؛ فقط لودهای همان دراپ‌زون را می‌بینید. بعداً از تنظیمات می‌توانید عوضش کنید.", "Pick one. You will only see that drop zone's loads. You can change it later in Settings."],
+      dz_live: ["فعال", "Live"], dz_off: ["منیفست بسته است", "Manifest closed"], dz_none: ["الان هیچ دراپ‌زونی فعال نیست. وقتی منیفست یک دراپ‌زون باز شود اینجا ظاهر می‌شود.", "No drop zone is open right now. It will show up here when a drop zone's manifest opens."],
+      dz_word: ["دراپ‌زون", "Drop zone"], dz_cur: ["دراپ‌زون فعلی", "Current drop zone"], dz_leave: ["تغییر", "Change"], dz_leave_h: ["دراپ‌زون", "Drop zone"] }; for (var k in N) if (!TX[k]) TX[k] = N[k]; })();
+  document.addEventListener("change", function (ev) { var t0 = ev.target; if (t0 && t0.dataset && t0.dataset.pk) { var v0 = t0.value; if (!v0) return; if (S.peer === "pick") { openChat(v0); return; } var st0 = S.gadd || S.gnew; if (st0) { st0.sel[v0] = 1; t0.value = ""; var pl0 = document.getElementById("plist"); if (pl0) pl0.innerHTML = gpickList(); var cb0 = document.getElementById("gcbtn"); if (cb0) cb0.textContent = (S.gadd ? tx("g_add") : tx("g_create")) + " (" + D(gSelCount()) + ")"; } return; } var t = ev.target; if (!t || !t.dataset || !t.dataset.sel || !S.sf) return; S.sf[t.dataset.sel] = t.value; S.noscroll = true; render(); });
+  document.addEventListener("click", function (ev) {
+    var t = ev.target.closest && ev.target.closest("[data-dzpick],[data-dzleave]"); if (!t) return;
+    if (t.dataset.dzpick) { S.dzSel = t.dataset.dzpick; lsSet(LSK.dz, S.dzSel); S.tab = "loads"; S.anim = true; refreshLoads().then(render); render(); return; }
+    S.dzSel = ""; lsSet(LSK.dz, ""); S.loads = normLoads([]); S.tab = "loads"; S.anim = true; refreshDz().then(render); render();
+  });
+  function role() { return ext().skydiverCategory || ""; }
+  function isTandem() { return role() === "Tandem Passenger"; }
+  function refreshAll() { return Promise.all([refreshDz(), refreshMe(), refreshLoads(), refreshMsgs(), refreshDm(), refreshPeers(), refreshGroups()]).then(function () { render(); }); }
   var pinging = false;
   function ping() {
-    if (document.hidden || !S.sess || pinging) return; pinging = true; setTimeout(function () { pinging = false; }, 6000);
+    if (document.hidden || !S.sess || pinging) return; pinging = true; setTimeout(function () { pinging = false; }, 4000);
     dmPing();
     authed("jumper_ping").then(function (r) {
       pinging = false; if (!r) return; var jobs = [];
@@ -354,8 +400,10 @@
     stopPolling();
     pushSync(); presBeat(); presRefresh();
     timers.push(setInterval(presBeat, 30000)); timers.push(setInterval(presRefresh, 12000));
-    timers.push(setInterval(ping, 1500));
-    timers.push(setInterval(function () { if (!document.hidden && S.sess) refreshMe().then(function (ch) { if (ch) softRender(); }); }, 30000));
+    timers.push(setInterval(ping, 1000));
+    timers.push(setInterval(function () { if (!document.hidden && S.sess) { var had = S.dzSel; refreshDz().then(function () { if (!S.dzSel || (had && !S.dzSel)) render(); }); } }, 20000));
+    timers.push(setInterval(function () { if (!document.hidden && S.sess) refreshMe().then(function (ch) { if (ch) softRender(); }); }, 1000));
+    timers.push(setInterval(function () { if (!document.hidden && S.sess) refreshSelf(); }, 2000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess) loadWeather().then(softRender); }, 600000));
     timers.push(setInterval(function () { if (!document.hidden && S.sess && (S.view === "f_log" || S.tab === "log")) refreshLog().then(function (ch) { if (ch) softRender(); }); }, 60000));
     timers.push(setInterval(tickCountdowns, 1000));
@@ -364,7 +412,7 @@
   function stopPolling() { timers.forEach(clearInterval); timers = []; }
   document.addEventListener("visibilitychange", function () { if (!document.hidden && S.sess) refreshAll(); });
   var lastScroll = 0, srT = 0; document.addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true, capture: true });
-  function softRender() { if (Date.now() - lastScroll < 350) { clearTimeout(srT); srT = setTimeout(softRender, 380); return; } if (S.tab === "msgs" && S.sess && document.getElementById("thr")) { updateThread(); updateBadges(); return; } var a = document.activeElement; if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT" || a.tagName === "SELECT")) { updateBadges(); return; } render(); }
+  function softRender() { if (S.sf && S.modal) { updateBadges(); return; } if (Date.now() - lastScroll < 350) { clearTimeout(srT); srT = setTimeout(softRender, 380); return; } if (S.tab === "msgs" && S.sess && document.getElementById("thr")) { updateThread(); updateBadges(); return; } var a = document.activeElement; if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT" || a.tagName === "SELECT")) { updateBadges(); return; } render(); }
   function tickCountdowns() { var els = document.querySelectorAll("[data-end]"); for (var i = 0; i < els.length; i++) { var end = +els[i].getAttribute("data-end"); els[i].textContent = mmss((end - Date.now()) / 1000); } detectEvents(); }
   function updateBadges() { var b = document.querySelectorAll(".badge[data-b]"); for (var i = 0; i < b.length; i++) { var k = b[i].getAttribute("data-b"); var n = k === "alerts" ? unreadNotes() : unreadMsgs(); b[i].textContent = D(n); b[i].style.display = n ? "" : "none"; } }
 
@@ -378,7 +426,7 @@
     var latin = u.replace(/[۰-۹]/g, function (d) { return FAD.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }).trim();
     rpc("jumper_login", { p_user: latin, p_pass: p }).then(function (r) {
       S.sess = { token: r.token, username: r.username }; if (r.must_change) { S.sess.mustChange = true; S.tempOld = p; S.tab = "me"; S.view = "f_pw"; } saveSess(S.sess, remember); S.busy = false; if (!S.sess.mustChange) S.tab = "loads"; localStorage.removeItem(LSK.prev); render(); refreshAll().then(startPolling);
-    }).catch(function (e) { S.busy = false; var c = (e.code || "").replace(/^.*?(bad_login|locked|pending|net).*$/, "$1"); S.err = tx(["bad_login", "locked", "pending", "net"].indexOf(c) >= 0 ? c : "fail"); render(); });
+    }).catch(function (e) { S.busy = false; var c = (e.code || "").replace(/^.*?(bad_login|locked|pending|revision|net).*$/, "$1"); S.err = tx(["bad_login", "locked", "pending", "revision", "net"].indexOf(c) >= 0 ? c : "fail"); render(); });
   }
   function setTab(t) { S.tab = t; S.view = ""; lsSet(LSK.tab, t); if (t === "msgs") S.peer = ""; if (t === "log") refreshLog().then(function () { if (S.tab === "log") render(); }); S.anim = true; render(); toTop(); }
   function sendMsg(body, attach) {
@@ -404,7 +452,7 @@
       '<label class="fld"><span>' + tx("pass") + '</span><input id="lp" class="ltr" type="password" autocomplete="current-password"></label>' +
       '<label class="chk"><input type="checkbox" id="lr" checked> <span>' + tx("remember") + '</span></label>' +
       '<div class="err" role="alert">' + esc(S.err) + '</div><button class="btn pri" type="submit"' + (S.busy ? " disabled" : "") + '>' + tx("login") + '</button>' +
-      '<div class="linkrow" style="justify-content:center"><a href="#" data-act="forgot">' + tx("forgot") + '</a></div><div class="regbox"><span>' + tx("reg_q") + '</span><a class="btn regbtn" href="register.html">' + tx("reg_acct") + '</a></div><div class="linkrow" style="justify-content:center">' + langSwitch() + '</div></form></div>';
+      '<div class="linkrow" style="justify-content:center"><a href="#" data-act="forgot">' + tx("forgot") + '</a></div><div class="regbox"><span>' + tx("reg_q") + '</span><a class="btn regbtn" href="register.html">' + tx("reg_acct") + '</a></div><div class="createdby">' + tx("created") + '</div><div class="linkrow" style="justify-content:center">' + langSwitch() + '</div></form></div>';
   }
   function viewForgot() {
     var body;
@@ -435,12 +483,81 @@
     h += '<div class="c2-m">' + [l.alt ? '<span dir="ltr">' + D(l.alt) + " ft</span>" : "", esc(l.pur || "")].filter(Boolean).join(" · ") + '</div><div class="c2-s"><span class="dots">' + dots + "</span><b>" + D(slots.length) + "/" + D(cap) + "</b>" + (free ? "<em>" + tx("g_free") + " " + D(free) + "</em>" : "") + '</div></div><span class="c2-go">›</span></div>';
     return h;
   }
+
+  function smMsg(code) { var k = "sm_e_" + String(code || "").replace(/^.*?(self_off|not_skydiver|slow_down|closed|full|net|need_checkin|busy_member|busy|bad_member|checked_elsewhere|bad_opts|too_many).*$/, "$1"); return TX[k] ? tx(k) : tx("sm_e_x"); }
+  function whyMsg(w) { w = String(w || ""); if (w === "off") return tx("sm_e_self_off"); if (/^(not_skydiver|closed|full|busy)$/.test(w)) return tx("sm_e_" + w); if (w === "no_load") return tx("sm_e_closed"); if (w === "not_on_load") return tx("sm_e_x"); return tx("sm_e_x") + (w ? " (" + esc(w.slice(0, 90)) + ")" : ""); }
+  function selfSeenCheck(d) {
+    var r = (d && d.req) || [], first = !S.selfSeen; S.selfSeen = S.selfSeen || {};
+    r.forEach(function (q) {
+      var was = S.selfSeen[q.id]; S.selfSeen[q.id] = q.st;
+      if (first || was !== "pending" || q.st === "pending") return;
+      if (q.st === "done") {
+        refreshLoads().then(function () {
+          var x = findLoad(q.date + "#" + q.n), pos = 0;
+          if (x && S.me) (x.l.slots || []).forEach(function (s2, i) { if (s2.u === S.me.uid) pos = i + 1; });
+          if (q.kind === "cancel") { toast(tx("sm_ok")); return; }
+          toast((q.kind === "edit" ? tx("sm_done_e") : tx("sm_done")).replace("{n}", D(q.n)) + (pos && q.kind !== "edit" ? "  " + tx("sm_ord") + " " + D(pos) : "  " + tx("sm_done2")));
+        });
+      } else toast(whyMsg(q.why));
+    });
+  }
+  function teamsGet() { return lsGet("mj_teams", []); }
+  function refreshSelf() { if (!S.sess) return Promise.resolve(); S.selfAt = Date.now(); return authed("jumper_self_state", { p_dz: S.dzSel || null }).then(function (d) { var sig = JSON.stringify(d); var ch = sig !== S.selfSig; S.selfSig = sig; S.self = d; selfSeenCheck(d); if (ch) softRender(); }).catch(function () {}); }
+  function selfPending(x) { var r = (S.self && S.self.req) || []; for (var i = 0; i < r.length; i++) if (r[i].date === x.date && r[i].n === x.l.n && r[i].st === "pending") return r[i]; return null; }
+  var DISCS = ["Belly", "Tracking", "Freefly", "Wingsuit", "Canopy Piloting", "Canopy Formation", "Accuracy", "Camera Flyer"], HOPS = [3500, 4000, 4500, 5500, 7500, 9000], TRKS = ["Before Belly", "After Belly", "Before Freefly", "After Freefly"];
+  function opt(k, v, on, label) { return '<button type="button" class="opt' + (on ? " on" : "") + '" data-act="sfset" data-k="' + k + '" data-v="' + esc(String(v)) + '">' + esc(label === undefined ? String(v) : label) + "</button>"; }
+  function sel(k, val, opts) { return '<select class="sf-sel" data-sel="' + k + '">' + opts.map(function (o) { return '<option value="' + esc(String(o[0])) + '"' + (String(o[0]) === String(val) ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select>"; }
+  var DABR = { Belly: "BF", Tracking: "TRK", Freefly: "FF", Wingsuit: "WS", "Canopy Piloting": "CP", "Canopy Formation": "CF", Accuracy: "AC", "Camera Flyer": "CAM" }, DLAB = { Belly: "Belly Fly", Tracking: "Tracking", Freefly: "Freefly", Wingsuit: "Wingsuit", "Canopy Piloting": "Canopy Piloting", "Canopy Formation": "Canopy Formation", Accuracy: "Accuracy", "Camera Flyer": "Camera" };
+  function selfForm(key) {
+    var f = S.sf, h = '<div class="sf"><div class="sf-seg2">' + opt("mode", "solo", f.mode === "solo", "\uD83E\uDE82 " + tx("sm_solo")) + opt("mode", "group", f.mode === "group", "\uD83D\uDC65 " + tx("sm_group")) + '</div><div class="sf-l">' + tx("sm_f_disc") + '</div><div class="sf-disc">' + DISCS.map(function (d) { return '<button type="button" class="dchip' + (f.disc === d ? " on" : "") + '" data-act="sfset" data-k="disc" data-v="' + esc(d) + '"><b>' + DABR[d] + "</b><small>" + DLAB[d] + "</small></button>"; }).join("") + "</div>";
+    var ld = findLoad(key), am = ld && ld.l.am, ha = ld && ld.l.ha, hopOpts = [[3500, "Hop & Pop 3500"], [5500, "Hop & Pop 5500"]];
+    if (am === "Hop & Pop") { if (ha) f.alt = ha; else if (+f.alt !== 3500 && +f.alt !== 5500) f.alt = 3500; if (!ha) h += sel("alt", f.alt, hopOpts); else h += '<p class="sf-n">Hop & Pop ' + D(ha) + "</p>"; }
+    else if (am === "Full Altitude" || !am) { f.alt = 0; h += '<p class="sf-n">' + tx("sm_full") + "</p>"; }
+    else { h += sel("alt", f.alt, [[0, tx("sm_full")]].concat(ha ? [[ha, "Hop & Pop " + ha]] : hopOpts)); }
+    var n = 1;
+    if (f.mode === "group") {
+      var tm = teamsGet(), cur = tm.length ? f.team : "new";
+      if (tm.length) h += '<div class="sf-l">' + tx("sm_team") + "</div>" + sel("team", cur, tm.map(function (t2) { return [t2.id, t2.name + " · " + D(t2.m.length + 1)]; }).concat([["new", tx("sm_newteam")]]));
+      if (cur === "new") {
+        var c = S.cands || []; h += '<div class="sf-l">' + tx("sm_pick") + '</div><div class="sf-r">' + (c.length ? c.map(function (m) { return opt("mem", m.h, !!f.mem[m.h], m.n); }).join("") : '<span class="muted small">' + tx("sm_nomem") + "</span>") + "</div>";
+        for (var k in f.mem) if (f.mem[k]) n++;
+      } else { var t3 = null; tm.forEach(function (t2) { if (t2.id === cur) t3 = t2; }); if (t3) { n = t3.m.length + 1; h += '<p class="muted small">' + esc(t3.m.map(function (m) { return m.n; }).join("، ")) + '</p><button type="button" class="linkb" data-act="teamdel" data-tid="' + esc(t3.id) + '">' + tx("sm_delteam") + "</button>"; } }
+      h += '<p class="sf-n">' + D(n) + " " + tx("sm_people") + "</p>";
+    }
+    return h + '<div class="sf-act"><button type="button" class="btn pri" data-act="sfgo" data-key="' + esc(key) + '">' + tx(f.edit ? "sm_save" : "sm_go") + '</button><button type="button" class="btn sm" data-act="sfx">' + tx("sm_cancel") + "</button></div></div>";
+  }
+  function selfBlock(x) {
+    var l = x.l, sf = S.self; if (!sf) return "";
+    if (!/^(Open|Ready|Loading)$/.test(l.st || "")) return "";
+    if (l.cs === "Running" && l.end && remaining(l) < 600) return '<div class="sm-box"><span class="muted small">' + tx("sm_late") + "</span></div>";
+    if (!sf.can) return '<div class="sm-box"><span class="muted small">' + tx("sm_only") + "</span></div>";
+    if (!sf.enabled) return '<div class="sm-box"><span class="muted small">' + tx("sm_off") + "</span></div>";
+    if (selfPending(x)) return '<div class="sm-box"><span class="muted small">' + tx("sm_sent") + "</span></div>";
+    var key = x.date + "#" + l.n;
+    if (isMine(l)) { if (S.sf && S.sf.key === key) return '<div class="sm-box">' + selfForm(key) + "</div>"; return '<div class="sm-box"><button type="button" class="btn sm" data-act="sfopen" data-edit="1" data-key="' + esc(key) + '">' + tx("sm_edit") + '</button><button type="button" class="btn sm" data-act="selfcancel" data-key="' + esc(key) + '">' + tx("sm_rem") + "</button></div>"; }
+    if (!sf.ci) return '<div class="sm-box"><span class="muted small">' + tx("sm_ci_need") + '</span><button type="button" class="btn pri" data-act="ci">' + tx("sm_ci") + "</button></div>";
+    if (sf.ci !== sf.dz) return '<div class="sm-box"><span class="muted small">' + tx("sm_ci_else") + "</span></div>";
+    if (S.sf && S.sf.key === key) return '<div class="sm-box">' + selfForm(key) + "</div>";
+    return '<div class="sm-box"><button type="button" class="btn pri" data-act="sfopen" data-key="' + esc(key) + '">' + tx("sm_add") + "</button></div>";
+  }
+  function ciBar() {
+    var sf = S.self; if (!sf || !sf.can || !sf.enabled || isTandem()) return "";
+    if (sf.ci && sf.ci !== sf.dz) return '<div class="cistrip warn"><span class="cii">!</span><span class="grow"><b>' + tx("sm_ci_else") + "</b></span></div>";
+    if (sf.ci) return '<div class="cistrip on"><span class="cii">✓</span><span class="grow"><b>' + tx("sm_ci_ok") + '</b></span><button type="button" class="ci-b ghost" data-act="ciundo">' + tx("sm_ci_undo") + "</button></div>";
+    return '<div class="cistrip"><span class="cii">…</span><span class="grow"><b>' + tx("sm_ci_off_h") + '</b></span><button type="button" class="ci-b" data-act="ci">' + tx("sm_ci") + "</button></div>";
+  }
+  function selfDo(key, name, extra) {
+    var x = findLoad(key); if (!x || S.busy) return; S.busy = true;
+    var args = { p_dz: S.dzSel || null, p_date: x.date, p_n: x.l.n }; for (var k in extra) args[k] = extra[k];
+    authed(name, args).then(function () { S.busy = false; S.sf = null; toast(tx("sm_ok")); refreshSelf(); [2500, 5000, 9000].forEach(function (ms) { setTimeout(function () { refreshSelf().then(refreshLoads).then(softRender); }, ms); }); }).catch(function (e) { S.busy = false; toast(smMsg(e.code)); refreshSelf(); });
+  }
+  function ciDo(name, args) { if (S.busy) return; S.busy = true; authed(name, args).then(function () { S.busy = false; return refreshSelf(); }).then(function () { S.noscroll = true; render(); }).catch(function (e) { S.busy = false; toast(smMsg(e.code)); refreshSelf(); }); }
   function findLoad(key) { var all = loadsFlat(); for (var i = 0; i < all.length; i++) if (all[i].date + "#" + all[i].l.n === key) return all[i]; return null; }
   function shortName(full) {
     var w = String(full || "").trim().split(/\s+/); if (w.length < 2) return w[0] || "";
     return L === "fa" ? w.slice(1).join(" ") : w[0].charAt(0).toUpperCase() + ". " + w.slice(1).join(" ");
   }
-  function jtAb(v) { var k = String(v || "").trim(), m = { belly: "BF", tracking: "TRK", freefly: "FF", wingsuit: "WS", "canopy piloting": "CP", "canopy formation": "CF", "coach jump": "CJ", "camera flyer": "CAMERA", accuracy: "AC", tandem: "TM", "tandem student": "TM ST", solo: "SOLO" }; return m[k.toLowerCase()] || k; }
+  function jtAb(v) { var k = String(v || "").trim(), m = { belly: "BF", tracking: "TRK", freefly: "FF", wingsuit: "WS", "canopy piloting": "CP", "canopy formation": "CF", "coach jump": "CJ", "camera flyer": "CAM", "tandem instructor": "TM INS", instructor: "INS", coach: "COACH", accuracy: "AC", tandem: "TM", "tandem student": "TM ST", solo: "SOLO" }; return m[k.toLowerCase()] || k; }
   function noCam(v) { return String(v === null || v === undefined ? "" : v).replace(/[\u{1F4F7}\u{1F4F8}\u{1F4F9}\u{1F3A5}\u{1F3A6}\u{1F4FD}\uFE0F]/gu, "").replace(/\s+/g, " ").trim(); }
   function licNo(v) { v = noCam(v); if (!v) return "—"; v = v.replace(/^\(?\s*[A-Za-z]{3,}\)?[\s:\-–]+/, "").replace(/^\(?\s*[A-Za-z]{3,}\)?\s+(?=[A-Za-z]-?\d)/, ""); return v || "—"; }
   function loadModal() {
@@ -453,12 +570,14 @@
       var nm = shortName(L === "fa" ? (s2.fa || s2.en) : (s2.en || s2.fa)), me = S.me && s2.u === S.me.uid;
       return '<div class="pp-r' + (me ? " me" : "") + '"><span>' + D(i + 1) + "</span><span class=\"pp-nm\">" + esc(noCam(nm)) + "</span><span>" + esc(D(licNo(s2.lic))) + "</span><span>" + esc(jtAb(noCam(s2.jt)) || "—") + "</span><span>" + esc(noCam(s2.d)) + "</span><span>" + (s2.alt ? D(s2.alt) : "—") + "</span></div>";
     }).join("") : '<div class="pp-none">' + tx("none_on") + "</div>";
-    return h + "</div></div></div></div>";
+    return h + "</div>" + selfBlock(x) + "</div></div></div>";
   }
   function viewLoads() {
     var all = loadsFlat(), today = todayTehran(), todays = all.filter(function (x) { return x.date === today; });
-    var mine = todays.filter(function (x) { return isMine(x.l); }), h = weatherCard();
-    if (S.loadedAt) h += '<p class="muted">' + tx("upd") + ": " + clockTxt(S.loadedAt) + " · " + tx("today") + " " + dateTxt(today) + "</p>";
+    var mine = todays.filter(function (x) { return isMine(x.l); }), h = "";
+    if (S.loadedAt) h += '<div class="stline"><p class="muted one">' + tx("upd") + ": " + clockTxt(S.loadedAt) + " · " + tx("today") + " " + dateTxt(today) + (S.dzSel ? " · " + esc(S.dzSel) : "") + "</p></div>";
+    h += (isTandem() ? "" : weatherCard()) + ciBar();
+    if (isTandem()) return h + (mine.length ? mine.map(loadCard).join("") : '<div class="empty">' + tx("loads_none") + "</div>");
     if (!todays.length) return h + '<div class="empty">' + tx("loads_none") + "</div>";
     if (mine.length) h += '<div class="h2">' + tx("loads_mine") + "</div>" + mine.map(loadCard).join("");
     var others = todays.filter(function (x) { return !isMine(x.l); });
@@ -514,20 +633,23 @@
     if (!S.bell) return "";
     var h = '<div class="modal" data-act="closebell"><div class="sheet"><div class="ld-title">' + ic("alerts") + " " + tx("t_alerts") + "</div>";
     if (!S.notes.length) h += '<div class="empty">' + tx("alerts_none") + "</div>";
-    else h += '<div class="notelist">' + S.notes.map(function (n) { return '<div class="note"><div class="ni">' + n.icon + '</div><div class="grow">' + esc(noteText(n)) + '<div class="muted">' + dateTxt(new Date(n.at).toISOString().slice(0, 10)) + " " + clockTxt(n.at) + "</div></div></div>"; }).join("") + "</div>";
+    else h += '<div class="notelist">' + S.notes.map(function (n) { return '<div class="note' + (n.go ? " go" : "") + '" data-act="notego" data-i="' + S.notes.indexOf(n) + '"><div class="ni">' + n.icon + '</div><div class="grow">' + esc(noteText(n)) + '<div class="muted">' + dateTxt(new Date(n.at).toISOString().slice(0, 10)) + " " + clockTxt(n.at) + "</div></div></div>"; }).join("") + "</div>";
     return h + '<div class="rowbtns">' + (S.notes.length ? '<button class="btn sm" data-act="clearnotes">' + tx("clear") + "</button>" : "") + '<button class="btn pri sm" data-act="closebell">' + tx("close") + "</button></div></div></div>";
   }
   function viewLogTab() { return '<div class="backrow"><b class="ftitle">' + tx("f_log") + "</b></div>" + logBody(); }
   function viewSettings() {
-    var bgOn = lsGet("mj_bg", true), np = typeof Notification === "undefined" ? "" : Notification.permission;
-    var h = '<div class="h2">' + tx("s_lang") + '</div><div class="card setrow">' + langSwitch() + "</div>";
+    var bgOn = lsGet("mj_bg", true), sndOn = lsGet("mj_snd", true);
     var pOn = pushActive(), ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches));
-    h += '<div class="h2">' + tx("s_notif") + '</div><div class="card setrow"><span class="grow">' + tx("push_t") + '</span><button class="switch' + (pOn ? " on" : "") + '" data-act="pushtog" aria-pressed="' + (pOn ? "true" : "false") + '"><i></i></button></div>';
-    h += '<div class="card setrow"><span class="grow">' + tx("snd_t") + '</span><button type="button" class="btn sm" data-act="sndtest">▶ ' + tx("snd_test") + '</button><button class="switch' + (lsGet("mj_snd", true) ? " on" : "") + '" data-act="sndtog" aria-pressed="' + (lsGet("mj_snd", true) ? "true" : "false") + '"><i></i></button></div>';
-    h += '<p class="muted small" style="margin:-4px 4px 12px">' + tx(typeof Notification !== "undefined" && Notification.permission === "denied" ? "push_blocked" : ios ? "push_ios" : "push_hint") + "</p>";
-    h += '<div class="card setrow"><span class="grow">' + tx("s_bg") + '</span><button class="switch' + (bgOn ? " on" : "") + '" data-act="setbg" aria-pressed="' + (bgOn ? "true" : "false") + '"><i></i></button></div>';
-    h += '<div class="h2">' + tx("s_acct") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_user") + '</span><span class="ltr">' + esc(D(S.sess.username)) + '</span></div><div><span>' + tx("f_pw") + '</span><span><button class="btn sm" data-act="gopw">' + tx("f_pw") + '</button></span></div></div></div>';
-    h += '<div class="h2">' + tx("s_app") + '</div><div class="card"><div class="kv"><div><span>' + tx("s_ver") + '</span><span class="ltr">' + APPV + '</span></div></div><p class="muted small">' + tx("s_install") + '</p></div>';
+    function sw(act, on) { return '<button class="switch' + (on ? " on" : "") + '" data-act="' + act + '" aria-pressed="' + (on ? "true" : "false") + '"><i></i></button>'; }
+    var h = '<div class="card setlist">';
+    if (S.dzSel) h += '<div class="srow"><span class="grow"><small>' + tx("dz_leave_h") + "</small><b>" + esc(S.dzSel) + '</b></span><button type="button" class="btn sm" data-dzleave="1">' + tx("dz_leave") + "</button></div>";
+    h += '<div class="srow"><span class="grow">' + tx("s_lang") + "</span>" + langSwitch() + "</div>";
+    h += '<div class="srow"><span class="grow">' + tx("push_t") + "</span>" + sw("pushtog", pOn) + "</div>";
+    h += '<div class="srow"><span class="grow">' + tx("snd_t") + '</span><button type="button" class="btn sm" data-act="sndtest">▶ ' + tx("snd_test") + "</button>" + sw("sndtog", sndOn) + "</div>";
+    h += '<div class="srow"><span class="grow">' + tx("s_bg") + "</span>" + sw("setbg", bgOn) + "</div></div>";
+    h += '<p class="muted small" style="margin:-2px 4px 12px">' + tx(typeof Notification !== "undefined" && Notification.permission === "denied" ? "push_blocked" : ios ? "push_ios" : "push_hint") + "</p>";
+    h += '<div class="setgrid"><div class="card mini"><small>' + tx("s_user") + '</small><b class="ltr">' + esc(D(S.sess.username)) + '</b><button class="btn sm" data-act="gopw">' + tx("f_pw") + '</button></div>';
+    h += '<div class="card mini"><small>' + tx("s_ver") + '</small><b class="ltr">' + fmtV(APPV) + '</b><span class="muted small">' + tx("s_install") + "</span></div></div>";
     return h + '<button class="btn wide danger" data-act="logout">' + ic("logout") + " " + tx("logout") + "</button>";
   }
   (function () { var N = { on_l: ["آنلاین", "Online"], off_l: ["آفلاین", "Offline"] }; for (var k in N) if (!TX[k]) TX[k] = N[k]; })();
@@ -641,11 +763,19 @@
     if (!chatOpen() || S.gi) return "";
     if (S.selmode) { var kn = Object.keys(S.ss).length, dis = kn ? "" : " disabled"; return '<div class="compose selbar"><button type="button" class="sbtn" data-act="selfwd"' + dis + '>↪ ' + tx("fwd_b") + '</button><button type="button" class="sbtn" data-act="selcopy"' + dis + '>⧉ ' + tx("copy_b") + '</button><button type="button" class="sbtn dng" data-act="seldel"' + dis + '>🗑 ' + tx("delete_b") + "</button></div>"; }
     if (S.rec) return '<div class="compose rec"><button type="button" class="cbtn" data-act="recx" title="✕">🗑</button><span class="rdot"></span><b id="rt" class="ltr">' + mmss((Date.now() - S.rec.t0) / 1000) + '</b><span class="grow"></span><button type="button" class="cbtn send" data-act="recsend">➤</button></div>';
-    return '<form class="compose" id="mf" autocomplete="off">' + replyBarHtml() + '<label class="cbtn" title="📎">📎<input type="file" id="cf" hidden accept="image/*,application/pdf,audio/*,video/mp4,.doc,.docx,.xls,.xlsx,.zip,.txt"></label><label class="cbtn" title="📷">📷<input type="file" id="cc" hidden accept="image/*" capture="environment"></label><textarea id="mt" rows="1" maxlength="1000" placeholder="' + esc(tx("msg_ph")) + '"></textarea><button type="submit" class="cbtn send" id="msend" hidden>➤</button><button type="button" class="cbtn mic" id="mmic" data-act="rec">🎙</button></form>';
+    return '<form class="compose" id="mf" autocomplete="off">' + replyBarHtml() + '<label class="cbtn" title="📎">📎<input type="file" id="cf" hidden accept="image/*,application/pdf,audio/*,video/mp4,.doc,.docx,.xls,.xlsx,.zip,.txt"></label><input type="file" id="cc" hidden accept="image/*" capture="environment"><textarea id="mt" rows="1" maxlength="1000" placeholder="' + esc(tx("msg_ph")) + '"></textarea><button type="submit" class="cbtn send" id="msend" hidden>➤</button><button type="button" class="cbtn mic" id="mmic" aria-label="mic/camera">' + (S.cm === "cam" ? "📷" : "🎙") + '</button><button type="button" class="cbtn cback" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + "</button></form>";
   }
+  function peerName2(p) { return (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; }
+  function peersSorted(q, have) {
+    q = (q || "").toLowerCase().trim(); var a = [], b = [];
+    S.peers.forEach(function (p) { if (have && have[p.id]) return; var hit = q && (p.fa + " " + p.en).toLowerCase().indexOf(q) >= 0; (hit ? a : b).push(p); });
+    b.sort(function (x, y) { return peerName2(x).localeCompare(peerName2(y)); });
+    return { hit: a, rest: b, all: a.concat(b) };
+  }
+  function peerSelect(q, have) { var r = peersSorted(q, have); return '<select class="psel" id="psel" data-pk="1"><option value="">' + esc(tx("pk_sel")) + "</option>" + r.all.map(function (p, i) { return '<option value="' + esc(p.id) + '">' + esc(peerName2(p)) + "</option>"; }).join("") + "</select>"; }
   function pickList() {
-    var q = (S.pq || "").toLowerCase(), h = "";
-    S.peers.forEach(function (p) { var n = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; if (q && (p.fa + " " + p.en).toLowerCase().indexOf(q) < 0) return; h += '<button type="button" class="crow" data-act="openchat" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + "</b></span></button>"; });
+    var r = peersSorted(S.pq, null), h = "";
+    r.all.forEach(function (p, i) { var n = peerName2(p); h += '<button type="button" class="crow' + (i < r.hit.length ? " hit" : "") + '" data-act="openchat" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + "</b></span></button>"; });
     return h || '<div class="empty">' + tx("dm_none") + "</div>";
   }
   /* ----- chat list ----- */
@@ -683,28 +813,28 @@
   }
   function listBodyHtml() { return (S.lq || "").trim() ? listSearchHtml() : listRows(); }
   function viewChatList() {
-    var h = '<button type="button" class="sosrow" data-act="sos"><span class="sosb">SOS</span><span class="grow"><b>' + tx("sos_btn_t") + '</b><small>' + tx("sos_sub") + '</small></span></button><div class="h2 h2row"><span>' + tx("dm_title") + '</span><button type="button" class="linkb" data-act="clrall">🗑 ' + tx("clr_all_b") + '</button></div>';
+    var h = '<button type="button" class="sosone" data-act="sos"><span class="sosb">SOS</span><b>' + tx("sos_btn_t") + '</b></button>'; h += '<div class="h2 h2row"><span>' + tx("dm_title") + '</span><button type="button" class="linkb" data-act="clrall">🗑 ' + tx("clr_all_b") + '</button></div>';
     h += '<label class="fld lsearch"><input id="lq" type="search" autocomplete="off" placeholder="' + esc(tx("search_all")) + '" value="' + esc(S.lq || "") + '"></label>';
     return h + '<div class="clist" id="lres">' + listBodyHtml() + '</div><button type="button" class="fab" data-act="newmenu">' + ic("msgs") + "<span>" + tx("dm_new") + "</span></button>";
   }
   function viewPick() {
-    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("dm_new") + '</b><small>' + tx("dm_sub") + '</small></div></div><label class="fld"><input id="pq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.pq || "") + '"></label><div class="clist" id="plist">' + pickList() + "</div>";
+    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("dm_new") + '</b><small>' + tx("dm_sub") + '</small></div></div><div class="pickrow"><label class="fld"><input id="pq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.pq || "") + '"></label>' + peerSelect(S.pq, null) + '</div><div class="clist" id="plist">' + pickList() + "</div>";
   }
   /* ----- group creation / members ----- */
+  function gHave() { var have = {}; if (S.gadd) { var g = grpById(gid()); if (g) g.members.forEach(function (m) { have[m.id] = 1; }); } return have; }
   function gpickList() {
-    var st = S.gadd || S.gnew; if (!st) return ""; var q = (st.q || "").toLowerCase(), h = "", have = {};
-    if (S.gadd) { var g = grpById(gid()); if (g) g.members.forEach(function (m) { have[m.id] = 1; }); }
-    S.peers.forEach(function (p) { if (have[p.id]) return; var n = (L === "fa" ? p.fa || p.en : p.en || p.fa) || ""; if (q && (p.fa + " " + p.en).toLowerCase().indexOf(q) < 0) return; h += '<button type="button" class="crow' + (st.sel[p.id] ? " on" : "") + '" data-act="gtog" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + '</b></span><span class="sck' + (st.sel[p.id] ? " on" : "") + '">✓</span></button>'; });
+    var st = S.gadd || S.gnew; if (!st) return ""; var r = peersSorted(st.q, gHave()), h = "";
+    r.all.forEach(function (p, i) { var n = peerName2(p); h += '<button type="button" class="crow' + (st.sel[p.id] ? " on" : "") + (i < r.hit.length ? " hit" : "") + '" data-act="gtog" data-p="' + esc(p.id) + '"><span class="av">' + esc(initials(n)) + '</span><span class="grow"><b>' + esc(n) + '</b></span><span class="sck' + (st.sel[p.id] ? " on" : "") + '">✓</span></button>'; });
     return h || '<div class="empty">' + tx("dm_none") + "</div>";
   }
   function gSelCount() { var st = S.gadd || S.gnew; return st ? Object.keys(st.sel).length : 0; }
   function viewGnew() {
     BAR = '<button type="button" class="btn pri" id="gcbtn" data-act="gcreate">' + tx("g_create") + " (" + D(gSelCount()) + ")</button>";
-    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("new_group") + '</b><small>' + tx("g_pick") + '</small></div></div><label class="fld"><input id="gname" maxlength="60" autocomplete="off" placeholder="' + esc(tx("g_name_ph")) + '" value="' + esc(S.gnew.name || "") + '"></label><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gnew.q || "") + '"></label><div class="clist" id="plist">' + gpickList() + "</div>";
+    return '<div class="chathead"><button type="button" class="backb" data-act="chatback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("new_group") + '</b><small>' + tx("g_pick") + '</small></div></div><label class="fld"><input id="gname" maxlength="60" autocomplete="off" placeholder="' + esc(tx("g_name_ph")) + '" value="' + esc(S.gnew.name || "") + '"></label><div class="pickrow"><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gnew.q || "") + '"></label>' + peerSelect(S.gnew.q, null) + '</div><div class="clist" id="plist">' + gpickList() + "</div>";
   }
   function viewGadd() {
     BAR = '<button type="button" class="btn pri" id="gcbtn" data-act="gaddgo">' + tx("g_add") + " (" + D(gSelCount()) + ")</button>";
-    return '<div class="chathead"><button type="button" class="backb" data-act="gaddback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("g_add") + '</b></div></div><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gadd.q || "") + '"></label><div class="clist" id="plist">' + gpickList() + "</div>";
+    return '<div class="chathead"><button type="button" class="backb" data-act="gaddback" aria-label="' + tx("back") + '">' + (L === "fa" ? "→" : "←") + '</button><div><b>' + tx("g_add") + '</b></div></div><div class="pickrow"><label class="fld"><input id="gq" type="search" autocomplete="off" placeholder="' + esc(tx("dm_search")) + '" value="' + esc(S.gadd.q || "") + '"></label>' + peerSelect(S.gadd.q, gHave()) + '</div><div class="clist" id="plist">' + gpickList() + "</div>";
   }
   function viewGinfo() {
     var g = grpById(gid()); if (!g) return "";
@@ -725,7 +855,7 @@
     var av = isGrp() ? (g ? gAvatar(g) : "") : S.peer === "staff" ? '<img src="logo.png" alt="">' : '<span class="av">' + esc(initials(nm)) + "</span>";
     var head;
     if (S.selmode) { var ks = Object.keys(S.ss).length; head = '<div class="chathead selhead"><button type="button" class="backb" data-act="selx">✕</button><b class="grow">' + D(ks) + " " + tx("sel_n") + '</b><button type="button" class="selall" data-act="selall">' + tx("sel_all") + "</button></div>"; }
-    else head = '<div class="chathead"><button type="button" class="backb backpill" data-act="chatback" aria-label="' + tx("back") + '"><span class="barr">' + (L === "fa" ? "→" : "←") + "</span><span>" + tx("back") + "</span></button>" + (isGrp() ? '<button type="button" class="ghd" data-act="ginfo">' + av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div></button>" : av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div>") + '<span class="grow"></span><button type="button" class="backb" data-act="sropen" title="' + esc(tx("search_ph")) + '">🔍</button>' + (isGrp() ? "" : '<button type="button" class="backb" data-act="clrask" data-p="' + esc(S.peer) + '" title="' + esc(tx("clr_b")) + '">🗑</button>') + "</div>";
+    else head = '<div class="chathead">' + (isGrp() ? '<button type="button" class="ghd" data-act="ginfo">' + av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div></button>" : av + "<div><b>" + esc(nm) + "</b>" + (sb ? "<small>" + sb + "</small>" : "") + "</div>") + '<span class="grow"></span><button type="button" class="backb" data-act="sropen" title="' + esc(tx("search_ph")) + '">🔍</button>' + (isGrp() ? "" : '<button type="button" class="backb" data-act="clrask" data-p="' + esc(S.peer) + '" title="' + esc(tx("clr_b")) + '">🗑</button>') + "</div>";
     var sbar = S.sr ? '<div class="searchbar"><input id="cq" type="search" autocomplete="off" placeholder="' + esc(tx("search_ph")) + '" value="' + esc(S.cq || "") + '"><span id="cqn" class="cqn">' + srCount() + '</span><button type="button" class="backb" data-act="srprev">▲</button><button type="button" class="backb" data-act="srnext">▼</button><button type="button" class="backb" data-act="srclose">✕</button></div>' : "";
     return '<div class="chatwrap">' + head + sbar + '<div class="thread' + (S.selmode ? " selecting" : "") + '" id="thr">' + threadHtml() + '</div><div id="cmpw">' + composeHtml() + "</div></div>";
   }
@@ -885,10 +1015,19 @@
     if (i.id === "lq") { S.lq = i.value; var l = document.getElementById("lres"); if (l) l.innerHTML = listBodyHtml(); }
     else if (i.id === "cq") { S.cq = i.value; S.sidx = Math.max(0, matchKeys().length - 1); srJump(); }
     else if (i.id === "gname" && S.gnew) S.gnew.name = i.value;
-    else if (i.id === "gq") { var st = S.gadd || S.gnew; if (st) { st.q = i.value; var pl = document.getElementById("plist"); if (pl) pl.innerHTML = gpickList(); } }
+    else if (i.id === "gq") { var st = S.gadd || S.gnew; if (st) { st.q = i.value; var pl = document.getElementById("plist"); if (pl) pl.innerHTML = gpickList(); var ps2 = document.getElementById("psel"); if (ps2) ps2.outerHTML = peerSelect(st.q, gHave()); } }
     else if (i.id === "fq" && S.fw) { S.fw.q = i.value; var fl = document.getElementById("fwl"); if (fl) fl.innerHTML = fwdTargets(); }
   });
   document.addEventListener("keydown", function (ev) { if (ev.target && ev.target.id === "cq" && ev.key === "Enter") { ev.preventDefault(); var mk = matchKeys(); if (mk.length) { S.sidx = (S.sidx + (ev.shiftKey ? -1 : 1) + mk.length) % mk.length; srJump(); } } });
+  var HOLD = null;
+  function micDown(ev) { var b = ev.target && ev.target.closest && ev.target.closest("#mmic"); if (!b || HOLD) return; HOLD = { fired: false, tm: setTimeout(function () { if (!HOLD) return; HOLD.fired = true; if (S.cm === "cam") { var c = document.getElementById("cc"); if (c) c.click(); HOLD = null; } else { S.holdRec = true; recStart(); } }, 380) }; }
+  function micUp() {
+    if (!HOLD) return; clearTimeout(HOLD.tm); var h = HOLD; HOLD = null;
+    if (!h.fired) { S.cm = S.cm === "cam" ? "mic" : "cam"; var m = document.getElementById("mmic"); if (m) m.textContent = S.cm === "cam" ? "\uD83D\uDCF7" : "\uD83C\uDF99"; return; }
+    if (S.holdRec) { S.holdRec = false; (function w(n) { if (S.rec) { recStop(Date.now() - S.rec.t0 > 800); } else if (n < 30) setTimeout(function () { w(n + 1); }, 100); })(0); }
+  }
+  document.addEventListener("pointerdown", micDown); document.addEventListener("pointerup", micUp); document.addEventListener("pointercancel", micUp);
+  document.addEventListener("contextmenu", function (ev) { if (ev.target && ev.target.closest && ev.target.closest("#mmic")) ev.preventDefault(); });
   function chatToggle() { var t = document.getElementById("mt"), s = document.getElementById("msend"), m = document.getElementById("mmic"); if (!t || !s || !m) return; var has = !!t.value.trim(); s.hidden = !has; m.hidden = has; t.style.height = "auto"; t.style.height = Math.min(120, Math.max(48, t.scrollHeight)) + "px"; }
   function voxUpdate(id) {
     var a = AUD[id], el = document.querySelector('.vox[data-id="' + id + '"]'); if (!el || !a) return;
@@ -1118,7 +1257,7 @@
     var base = +((S.me && S.me.ext && S.me.ext.totalJumps) || 0) || 0, year = 0, mx = 0, last = "", types = {};
     rows.forEach(function (r) { if (r.d) { if (yr(r.d) === ty) year++; if (!last || r.d > last) last = r.d; } if (+r.alt > mx) mx = +r.alt; var t = jtAb(r.jt) || "—"; types[t] = (types[t] || 0) + 1; });
     var ago = last ? daysUntil(last) : null, tk = Object.keys(types).sort(function (a, b) { return types[b] - types[a]; }).slice(0, 5), top = tk.length ? types[tk[0]] : 1;
-    var h = '<div class="card lstats"><div class="h2">' + tx("log_stats") + '</div><div class="lsg"><div><b>' + D(base + rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "—") + "</b><span>" + tx("ls_max") + " (ft)</span></div><div><b>" + (last ? dateTxt(last) : "—") + "</b><span>" + tx("ls_last") + (ago !== null && ago <= 0 ? " · " + fmt(tx("ls_ago"), { d: -ago }) : "") + "</span></div></div>";
+    var h = '<div class="card lstats"><div class="lsg"><div><b>' + D(base + rows.length) + "</b><span>" + tx("ls_total") + "</span></div><div><b>" + D(year) + "</b><span>" + tx("ls_year") + "</span></div><div><b>" + (mx ? D(mx) : "\u2014") + "</b><span>" + tx("ls_max") + "</span></div></div><div class=\"lslast\"><span>" + tx("ls_last") + "</span><b>" + (last ? dateTxt(last) : "\u2014") + "</b>" + (ago !== null && ago <= 0 ? "<em>" + fmt(tx("ls_ago"), { d: -ago }) + "</em>" : "") + "</div>";
     if (tk.length) { h += '<div class="h2" style="margin-top:12px">' + tx("ls_types") + "</div>"; tk.forEach(function (t) { h += '<div class="lbar"><span>' + esc(t) + '</span><div><i style="width:' + Math.round(types[t] * 100 / top) + '%"></i></div><b>' + D(types[t]) + "</b></div>"; }); }
     if (base) h += '<p class="muted small" style="margin:10px 0 0">' + tx("ls_base") + ": " + D(base) + " + " + tx("ls_rec") + ": " + D(rows.length) + "</p>";
     return h + "</div>";
@@ -1160,10 +1299,37 @@
     if (!S.me) return '<div class="empty">…</div>';
     if (!S.me.found) return '<div class="empty">' + tx("me_nf") + "</div>";
     if (S.view) { var fb = folderBody(S.view); if (!S.edit || S.edit.folder !== S.view) BAR = '<button class="btn" data-act="back">' + (L === "fa" ? "→ " : "← ") + tx("back") + "</button>" + (EDIT[S.view] ? '<button class="btn pri grow" data-act="edit" data-f="' + S.view + '">✏️ ' + tx("edit") + "</button>" : ""); return '<div class="backrow"><b class="ftitle">' + tx(S.view) + "</b></div>" + fb; }
-    var h = '<div class="card row">' + (S.photo ? '<img class="avatar" src="' + esc(S.photo) + '" alt="">' : '<div class="avatar ph">' + ic("user") + "</div>") + '<div class="grow"><div class="ld-title">' + esc(personName()) + '</div><div class="muted ltr">' + esc((prof().code || "")) + " " + esc(D(S.sess.username)) + "</div></div></div>";
-    h += readyCard();
+    var h = '<div class="card row prow">' + (S.photo ? '<img class="avatar" src="' + esc(S.photo) + '" alt="">' : '<div class="avatar ph">' + ic("user") + "</div>") + '<div class="grow"><div class="ld-title">' + esc(personName()) + '</div><div class="muted ltr">' + esc((prof().code || "")) + " " + esc(D(S.sess.username)) + "</div></div></div>";
+    h += statusCard();
     h += '<div class="folders">' + FOLDERS.map(function (f) { return '<button class="folder" style="--c:' + f[2] + '" data-folder="' + f[0] + '"><span class="fi">' + ic(f[1]) + "</span><b>" + tx(f[0]) + "</b></button>"; }).join("") + "</div>";
     return h;
+  }
+  function statusCard() {
+    var e = ext(), p = prof(), today = todayTehran(), st = "none", until = e.cardUntil || "", from = e.cardDate || "", y = +e.cardYellow || 0;
+    if (e.cardRed && (!until || until >= today)) st = "red";
+    else { var live = !!from && from <= today && today <= (until || from); if (live && y >= 2) st = "yellow2"; else if (live && y === 1) st = "yellow"; }
+    var h = '<div class="card stc"><div class="stc-c cs-' + st + '">';
+    if (st === "none") h += '<div class="stc-none"><b>' + tx("cd_none") + "</b></div>";
+    else { var dur = st === "red" ? (until ? tx("cd_until") + " " + dateTxt(until) : tx("cd_open")) : (until && until !== from ? tx("cd_until") + " " + dateTxt(until) : tx("cd_untoday")); var kc = "<i class=\"kcard " + (st === "red" ? "r" : "y") + "\"></i>"; if (st === "yellow2") kc += kc; h += '<div class="stc-r1"><small>' + dur + '</small></div><div class="stc-r2"><span class="cdchip">' + kc + tx(st === "red" ? "cd_has_r" : st === "yellow2" ? "cd_has_y2" : "cd_has_y") + (e.cardReason ? ":" : "") + '</span><span class="grow cdwhy">' + esc(e.cardReason || "") + "</span></div>"; }
+    h += "</div>";
+    var due = ""; if (p.reserve_repack_date) { var d = new Date(p.reserve_repack_date + "T12:00:00Z"); if (!isNaN(d)) { d.setUTCDate(d.getUTCDate() + 180); due = d.toISOString().slice(0, 10); } }
+    var items = [["w_mem", p.membership_expiry], ["w_med", e.medicalExpiry], ["w_ins", e.insuranceExpiry], ["rd_rep", due]];
+    h += '<div class="stc-t">' + tx("rd_h") + '</div><div class="stc-g">';
+    items.forEach(function (it) { var dl = it[1] ? daysUntil(it[1]) : null, cls = dl === null ? "na" : dl < 0 ? "bad" : dl <= 30 ? "warn" : "ok", txt = dl === null ? tx("rd_none") : dl < 0 ? tx("rd_exp") : fmt(tx("rd_left"), { d: dl }); h += '<div class="rdt ' + cls + '"><i></i><span class="grow"><b>' + tx(it[0]) + "</b><em>" + txt + "</em></span></div>"; });
+    return h + "</div></div>";
+  }
+  function conductBlock() {
+    var e = ext(), today = todayTehran(), st = "none", until = e.cardUntil || "", from = e.cardDate || "", y = +e.cardYellow || 0;
+    if (e.cardRed && (!until || until >= today)) st = "red";
+    else { var live = !!from && from <= today && today <= (until || from); if (live && y >= 2) st = "yellow2"; else if (live && y === 1) st = "yellow"; }
+    var h = '<div class="card cardstat cs-' + st + '"><div class="h2">' + tx("cd_h") + "</div>";
+    if (st === "none") return h + '<p class="muted">' + tx("cd_none") + "</p></div>";
+    var dur = st === "red" ? (until ? dateTxt(until) + " (" + fmt(tx("cd_left"), { d: Math.max(0, daysUntil(until)) }) + ")" : tx("cd_open")) : (until && until !== from ? dateTxt(until) : tx("cd_today"));
+    h += '<div class="cdhead"><span class="cdchip">' + (st === "red" ? "🟥 " : "🟨 ") + tx(st === "red" ? "cd_r" : st === "yellow2" ? "cd_y2" : "cd_y") + "</span></div>";
+    h += '<div class="kv"><div><span>' + tx("cd_why") + "</span><b>" + esc(e.cardReason || tx("cd_noreason")) + "</b></div>";
+    if (from) h += "<div><span>" + tx("cd_since") + "</span><b>" + dateTxt(from) + "</b></div>";
+    h += "<div><span>" + tx(st === "red" ? "cd_ban" : "cd_until") + "</span><b>" + dur + "</b></div></div>";
+    return h + '<p class="muted small">' + tx("cd_note") + "</p></div>";
   }
   function readyCard() {
     var p = prof(), e = ext(), due = "";
@@ -1188,6 +1354,7 @@
     if (a === "calclr") { S.edit.vals[S.cal.k] = ""; S.cal = null; render(); return true; }
     if (a === "caltoday") { S.edit.vals[S.cal.k] = todayTehran(); S.cal = null; render(); return true; }
     if (a === "bell") { S.bell = true; S.notes.forEach(function (n) { n.read = true; }); saveNotes(); render(); return true; }
+    if (a === "notego") { var nn = S.notes[+t.dataset.i]; S.bell = false; if (nn && nn.go) { S.tab = nn.go.tab || "loads"; if (nn.go.tab === "msgs" && nn.go.peer) { render(); openChat(nn.go.peer); } else S.peer = null; } render(); return true; }
     if (a === "closebell") { if (ev.target === t || t.tagName === "BUTTON") { S.bell = false; render(); } return true; }
     if (a === "clearnotes") { S.notes = []; saveNotes(); render(); return true; }
     if (a === "pushtog") { if (pushActive()) pushOff(); else pushOn(); return true; }
@@ -1195,7 +1362,23 @@
     if (a === "sndtog") { lsSet("mj_snd", !lsGet("mj_snd", true)); if (lsGet("mj_snd", true)) beep(); render(); return true; }
     if (a === "setbg") { lsSet("mj_bg", lsGet("mj_bg", true) ? false : true); render(); return true; }
     if (a === "gopw") { S.tab = "me"; S.view = "f_pw"; S.anim = true; render(); toTop(); return true; }
-    if (a === "openload") { S.modal = t.dataset.key; render(); return true; }
+    if (a === "openload") { S.modal = t.dataset.key; render(); refreshSelf(); return true; }
+    if (a === "ci") { ciDo("jumper_checkin_do", { p_dz: S.dzSel || null }); return true; }
+    if (a === "ciundo") { ciDo("jumper_checkin_undo", {}); return true; }
+    if (a === "sfopen") { S.sf = { key: t.dataset.key, edit: !!t.dataset.edit, mode: "solo", disc: "Belly", alt: 0, team: "new", mem: {} }; var tm0 = teamsGet(); if (tm0.length) S.sf.team = tm0[0].id; S.cands = []; authed("jumper_self_cands", { p_dz: S.dzSel || null }).then(function (d) { S.cands = d || []; S.noscroll = true; render(); }).catch(function () {}); S.noscroll = true; render(); return true; }
+    if (a === "sfx") { S.sf = null; S.noscroll = true; render(); return true; }
+    if (a === "sfset") { var k2 = t.dataset.k, v2 = t.dataset.v; if (k2 === "mem") S.sf.mem[v2] = !S.sf.mem[v2]; else S.sf[k2] = v2; S.noscroll = true; render(); return true; }
+    if (a === "teamdel") { var tl = teamsGet().filter(function (t2) { return t2.id !== t.dataset.tid; }); lsSet("mj_teams", tl); var nx = tl[0] ? tl[0].id : "new"; S.sf.team = nx; S.noscroll = true; render(); return true; }
+    if (a === "sfgo") {
+      var f2 = S.sf, mem = [], opts = { disc: f2.disc, exit: +f2.alt ? "hop" : "full", alt: +f2.alt || 0, members: mem };
+      if (f2.mode === "group") {
+        var tms = teamsGet(), use = null; if (tms.length) tms.forEach(function (t2) { if (t2.id === f2.team) use = t2; });
+        if (use) use.m.forEach(function (m) { mem.push(m.h); });
+        else { var picked = []; (S.cands || []).forEach(function (m) { if (f2.mem[m.h]) { mem.push(m.h); picked.push(m); } }); if (!mem.length) { toast(tx("sm_e_group")); return true; } tms.unshift({ id: "t" + Date.now(), name: picked.map(function (m) { return String(m.n).split(" ")[0]; }).join(" + "), m: picked }); lsSet("mj_teams", tms.slice(0, 8)); }
+      }
+      selfDo(t.dataset.key, "jumper_self_add", { p_opts: opts, p_edit: !!f2.edit }); return true;
+    }
+    if (a === "selfcancel") { selfDo(t.dataset.key, "jumper_self_cancel", {}); return true; }
     if (a === "closemodal") { if (ev.target === t || t.tagName === "BUTTON") { S.modal = ""; render(); } return true; }
     if (a === "edit") { startEdit(t.dataset.f); return true; }
     if (a === "editcancel") { S.edit = null; render(); return true; }
@@ -1253,13 +1436,14 @@
   var BAR = "";
   var GMS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function topDate() { var n = new Date(), y = n.getFullYear(), m = n.getMonth() + 1, d = n.getDate(); if (L === "fa") { var j = g2j(y, m, d); return D(j[2]) + " " + JM[j[1] - 1] + " " + D(j[0]); } return d + " " + GMS[m - 1] + " " + y; }
-  var APPV = "42";
+  var APPV = "66"; function fmtV(n) { n = parseInt(n, 10) || 1; var p = n - 1, mt = Math.floor(p / 30); return Math.floor(mt / 5) + "." + (mt % 5 + 1) + "." + (p % 30 + 1); }
   function viewShell() {
-    BAR = ""; var forced = S.sess && S.sess.mustChange; var body = forced ? pwBody() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
+    BAR = ""; var forced = S.sess && S.sess.mustChange; if (isTandem() && S.tab !== "loads" && S.tab !== "set") S.tab = "loads";
+    var body = forced ? pwBody() : (!S.dzSel && S.tab !== "set") ? viewDzPick() : S.tab === "loads" ? viewLoads() : S.tab === "log" ? viewLogTab() : S.tab === "set" ? viewSettings() : S.tab === "msgs" ? viewMsgs() : viewMe();
     var nA = unreadNotes(), nM = unreadMsgs();
     function tab(k, icn, label, n, b) { return '<button class="' + (S.tab === k ? "on" : "") + '" data-tab="' + k + '"><span class="ti">' + ic(icn) + "</span>" + label + (b ? '<span class="badge" data-b="' + b + '" style="' + (n ? "" : "display:none") + '">' + D(n) + "</span>" : "") + "</button>"; }
     return '<div class="shell' + (S.anim ? " enter" : "") + '"><div class="top"><img src="logo.png" alt=""><b>' + tx("app") + '</b><span class="topdate">' + topDate() + "</span>" + (forced ? langSwitch() : "") + '<button class="iconbtn bellbtn' + (nA ? " has" : "") + '" data-act="bell" title="' + tx("t_alerts") + '">' + ic("alerts") + '<span class="badge bb" data-b="alerts" style="' + (nA ? "" : "display:none") + '">' + D(nA) + '</span></button>' + (forced ? '<button class="iconbtn" data-act="logout" title="' + tx("logout") + '">' + ic("logout") + "</button>" : "") + '</div><div class="page' + (S.anim ? " enter" : "") + '">' + body + "</div>" + (BAR ? '<div class="fixbar">' + BAR + "</div>" : "") +
-      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me")) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + stampFull() + "</div>";
+      (forced ? "" : '<nav class="tabs">' + tab("loads", "loads", tx("t_loads")) + (isTandem() ? "" : tab("msgs", "msgs", tx("t_msgs"), nM, "msgs") + tab("log", "book", tx("f_log")) + tab("me", "user", tx("t_me"))) + tab("set", "gear", tx("t_set")) + "</nav>") + modalHtml() + (S.toast ? '<div class="toast">' + esc(S.toast) + "</div>" : "") + stampFull() + "</div>";
   }
   function stampFull() {
     if (!S.sbOn || !S.sess || S.tab !== "loads" || chatOpen()) { if (!S.sbOn) S.stampSeen = false; return ""; }
@@ -1279,7 +1463,9 @@
     var thOld = document.getElementById("thr"), keepThr = thOld ? thOld.scrollTop : 0, hadThr = !!thOld, atEnd = thOld ? thOld.scrollTop + thOld.clientHeight >= thOld.scrollHeight - 40 : false;
     var keepMsg = document.getElementById("mt") ? document.getElementById("mt").value : "";
     var keepR = document.getElementById("lr") ? document.getElementById("lr").checked : true, keepU = document.getElementById("lu") ? document.getElementById("lu").value : "", keepP = document.getElementById("lp") ? document.getElementById("lp").value : "";
+    var mdOld = document.querySelector(".modal"), shOld = mdOld && mdOld.querySelector(".sheet"), keepSheet = shOld ? shOld.scrollTop : 0, hadModal = !!mdOld;
     $app.innerHTML = S.sess ? viewShell() : (S.mode === "forgot" ? viewForgot() : viewLogin());
+    if (hadModal) { var mdNew = document.querySelector(".modal"); if (mdNew) { mdNew.classList.add("noanim"); var shNew = mdNew.querySelector(".sheet"); if (shNew) shNew.scrollTop = keepSheet; } }
     if (keepMsg && document.getElementById("mt")) document.getElementById("mt").value = keepMsg;
     if (!S.sess && document.getElementById("lr")) document.getElementById("lr").checked = keepR;
     if (!S.sess) { if (keepU) document.getElementById("lu").value = keepU; if (keepP) document.getElementById("lp").value = keepP; }
@@ -1328,7 +1514,7 @@
   }
   document.addEventListener("input", onEditInput);
   document.addEventListener("change", onEditInput);
-  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "mt") chatToggle(); if (ev.target && ev.target.id === "pq") { S.pq = ev.target.value; var l = document.getElementById("plist"); if (l) l.innerHTML = pickList(); } });
+  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "mt") chatToggle(); if (ev.target && ev.target.id === "pq") { S.pq = ev.target.value; var l = document.getElementById("plist"); if (l) l.innerHTML = pickList(); var ps = document.getElementById("psel"); if (ps) ps.outerHTML = peerSelect(S.pq, null); } });
   document.addEventListener("keydown", function (ev) { if (ev.target && ev.target.id === "mt" && ev.key === "Enter" && !ev.shiftKey && !ev.isComposing && window.matchMedia && window.matchMedia("(hover: hover)").matches) { ev.preventDefault(); var f = document.getElementById("mf"); if (f && f.requestSubmit) f.requestSubmit(); } });
   document.addEventListener("change", function (ev) { var i = ev.target; if (i && (i.id === "cf" || i.id === "cc") && i.files && i.files[0]) { chatSend(i.files[0]); i.value = ""; } });
   document.addEventListener("change", function (ev) { var i = ev.target; if (i.matches && i.matches("input[type=file][data-kind]") && i.files && i.files[0]) { uploadDoc(i.dataset.kind, i.files[0]); i.value = ""; } });

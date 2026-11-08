@@ -49,9 +49,13 @@ const LBL = {
   send: ["ارسال ثبت‌نام", "Send registration"], sending: ["در حال ارسال…", "Sending…"], uploading: ["در حال بارگذاری مدارک…", "Uploading documents…"],
   sec_account: ["حساب کاربری", "Account"], sec_personal: ["اطلاعات شخصی", "Personal details"], sec_emerg: ["تماس اضطراری", "Emergency contact"],
   sec_cat: ["دسته‌بندی", "Category"], sec_lic: ["لایسنس و عضویت", "License and membership"], sec_mem: ["عضویت", "Membership"], sec_qual: ["صلاحیت‌ها و رشته‌ها", "Ratings and disciplines"], sec_exp: ["سابقه‌ی پرش", "Jump experience"],
-  sec_gear: ["تجهیزات", "Equipment"], sec_med: ["پزشکی و بیمه", "Medical and insurance"], sec_docs: ["عکس و مدارک", "Photo and documents"],
+  sec_gear: ["تجهیزات", "Equipment"], sec_med: ["پزشکی", "Medical"], sec_ins: ["بیمه‌نامه", "Insurance"], sec_docs: ["عکس و مدارک", "Photo and documents"],
   nationalityType: ["تابعیت", "Nationality"], nationalId: ["کد ملی", "National ID"], passportNumber: ["شماره‌ی پاسپورت", "Passport number"], nationalityCountry: ["کشور / ملیت", "Country / Nationality"],
   userIs: ["نام کاربری شما:", "Your username:"], userHint: ["نام کاربری شما همان کد ملی (یا شماره‌ی پاسپورت) است.", "Your username is your national ID (or passport number)."],
+  dz: ["دراپ‌زون / رویداد", "Drop zone / event"], dzPick: ["انتخاب کنید…", "Choose…"], dzNeed: ["دراپ‌زون را انتخاب کنید.", "Choose your drop zone."],
+  fixTitle: ["اصلاح ثبت‌نام", "Fix my registration"], fixUser: ["نام کاربری (کد ملی / پاسپورت)", "Username (national ID / passport)"], fixPass: ["رمز ورود", "Password"], fixGo: ["نمایش فرم برای اصلاح", "Show my form"],
+  fixBad: ["نام کاربری یا رمز درست نیست، یا فرم شما برای اصلاح برگشت داده نشده است.", "Wrong username or password, or your form was not sent back."], fixIntro: ["مسئول موارد زیر را برای اصلاح علامت زده است. فقط همین موارد را درست کنید و دوباره ارسال کنید:", "The staff flagged the items below. Fix them and send again:"],
+  fixNote: ["توضیح مسئول", "Staff note"], fixReup: ["این مدرک را دوباره بارگذاری کنید.", "Upload this file again."], fixSend: ["ارسال اصلاحیه", "Send corrections"],
   password: ["رمز ورود (دلخواه)", "Password (your choice)"], password2: ["تکرار رمز ورود", "Repeat password"], passHint: ["حداقل ۶ نویسه. هرکس رمز را خودش انتخاب می‌کند و هیچ‌کس نمی‌تواند آن را ببیند.", "At least 6 characters. You choose it yourself and nobody can read it."],
   firstFa: ["نام (فارسی)", "First name (Persian)"], lastFa: ["نام خانوادگی (فارسی)", "Last name (Persian)"], fatherFa: ["نام پدر (فارسی)", "Father's name (Persian)"],
   firstEn: ["نام (انگلیسی)", "First name (English)"], lastEn: ["نام خانوادگی (انگلیسی)", "Last name (English)"], fatherEn: ["نام پدر (انگلیسی)", "Father's name (English)"],
@@ -131,7 +135,10 @@ const canopyOpts = () => (window.REG_MODELS ? REG_MODELS.canopy : []).map((m) =>
 const wingsuitOpts = () => (window.REG_MODELS ? REG_MODELS.wingsuit : []).map((m) => [m, m, m, m.split(" — ")[0]]);
 
 /* ---------- state ---------- */
-const S = { v: { nationalityType: "Iranian", rigOwnership: "Rental", disciplines: [], ratings: {}, extraLicenses: [] }, files: {}, bad: new Set(), id: null, saved: false, other: {} };
+const FIX = new URLSearchParams(location.search).get("fix") === "1";
+const FIXMAP = { name: ["firstFa", "lastFa", "firstEn", "lastEn"], father: ["fatherFa", "fatherEn"], birth: ["birthDate"], gender: ["gender"], blood: ["bloodType"], nat: ["nationalId", "passportNumber", "nationalityCountry", "nationalityType"], phone: ["phone"], email: ["email"], hw: ["heightCm", "weightKg"], emerg: ["emergencyNameFa", "emergencyNameEn", "emergencyPhone", "emergencyRelation"], cat: ["skydiverCategory", "studentTraining", "tandemPurpose"], lic: ["organization", "licenseType", "licenseNumber"], mem: ["membershipNumber", "membershipExpiry"], first: ["firstJumpDate"], jumps: ["totalJumps", "jumpsLast12Months", "lastJumpDate"], ws: ["wingsuitModel", "totalWingsuitJumps", "currentWingsuitJumps"], equip: ["rigOwnership", "rigType", "mainModel", "mainSize", "ownCanopyJumps", "reserveRepackDate", "rentalLastCanopyModel", "rentalLastCanopySize", "rentalLastCanopyJumps"], med: ["medicalType", "medicalExpiry", "medicalNotes"], ins: ["insuranceProvider", "insurancePolicyNumber", "insuranceExpiry"], ratings: ["ratings"], disc: ["disciplines"] };
+const FIXLAB = { name: ["نام", "Name"], father: ["نام پدر", "Father name"], birth: ["تاریخ تولد", "Birth date"], gender: ["جنسیت", "Gender"], blood: ["گروه خون", "Blood type"], nat: ["تابعیت / شناسه", "Nationality / ID"], phone: ["تلفن", "Phone"], email: ["ایمیل", "Email"], hw: ["قد / وزن", "Height / weight"], emerg: ["تماس اضطراری", "Emergency contact"], cat: ["دسته", "Category"], lic: ["لایسنس", "License"], mem: ["عضویت", "Membership"], first: ["اولین پرش", "First jump"], jumps: ["تعداد پرش", "Jumps"], ws: ["ویندسوت", "Wingsuit"], equip: ["تجهیزات", "Equipment"], med: ["پزشکی", "Medical"], ins: ["بیمه", "Insurance"], ratings: ["صلاحیت‌ها", "Ratings"], disc: ["رشته‌ها", "Disciplines"] };
+const S = { dzList: [], dz: "", fix: null, v: { nationalityType: "Iranian", rigOwnership: "Rental", disciplines: [], ratings: {}, extraLicenses: [] }, files: {}, bad: new Set(), id: null, saved: false, other: {} };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const val = (k) => (S.v[k] == null ? "" : S.v[k]);
 const cat = () => val("skydiverCategory");
@@ -172,7 +179,9 @@ const SEC = (ic, title, body) => `<section class="sec"><h2><span class="ic">${ic
 const RO = (id, lab) => `<div class="ro-wrap" id="w-${id}"><span class="l" style="font-size:13.5px;color:#d5ddcb;display:block;margin-bottom:5px">${t(lab)}</span><div class="ro" id="ro-${id}"><strong>—</strong></div><small id="rs-${id}"></small></div>`;
 function FILE(kind) { const f = S.files[kind]; return `<div class="file-row${f ? " has" : ""}" data-fr="${kind}"><div class="nm"><b>${t("f_" + kind)}</b> <small class="fnote">${t("n_" + kind)}</small><br><span class="fn">${f ? esc(f.name) : t("noFile")}</span></div><label class="btn" style="margin:0">${t("choose")}<input type="file" data-file="${kind}" accept="image/jpeg,image/png,image/webp,application/pdf" style="display:none"></label></div>`; }
 
-function docKinds() { const c = cat(); return ["photo", val("nationalityType") === "Iranian" ? "nationalId" : "passport"].concat(c === "Skydiver" ? ["license"] : [], c === "Tandem Passenger" ? [] : ["logbook"], c !== "Tandem Passenger" && val("rigOwnership") === "Own" ? ["dataCard"] : [], ["medical", "insurance"]); }
+const hasIns = () => ["insuranceProvider", "insurancePolicyNumber", "insuranceExpiry"].some((k) => String(val(k) || "").trim() !== "");
+function refreshDocs() { const g = document.querySelector(".file-grid"); if (g) g.innerHTML = docKinds().map(FILE).join(""); }
+function docKinds() { const c = cat(); return ["photo", val("nationalityType") === "Iranian" ? "nationalId" : "passport"].concat(c === "Skydiver" ? ["license"] : [], c === "Tandem Passenger" ? [] : ["logbook"], c !== "Tandem Passenger" && val("rigOwnership") === "Own" ? ["dataCard"] : [], (["FAA Medical", "Iran CAO Medical", "Medical Certificate"].includes(val("medicalType")) ? ["medical"] : []).concat(hasIns() ? ["insurance"] : [])); }
 function render() {
   for (const k of Object.keys(DD)) delete DD[k];
   document.documentElement.lang = L; document.documentElement.dir = L === "fa" ? "rtl" : "ltr"; document.title = "Manifest — " + t("title");
@@ -209,7 +218,10 @@ function render() {
       <div class="grid" data-vis="ws">${DDC("wingsuitModel", { opts: wingsuitOpts(), group: 1, search: 1, other: 1 })}</div>` : ""}`);
   }
   if (c) {
-    h += SEC("🩺", "sec_med", `<div class="grid">${DDC("medicalType", { opts: OPT.medical })}${DATE("medicalExpiry", {})}${IN("medicalNotes", {})}${IN("insuranceProvider", {})}${IN("insurancePolicyNumber", { ltr: 1 })}${DATE("insuranceExpiry", {})}</div>`);
+    if (!["FAA Medical", "Iran CAO Medical", "Medical Certificate"].includes(val("medicalType")) && S.v.medicalExpiry) S.v.medicalExpiry = "";
+    const validMed = ["FAA Medical", "Iran CAO Medical", "Medical Certificate"].includes(val("medicalType"));
+    h += SEC("🩺", "sec_med", `<div class="grid">${DDC("medicalType", { opts: OPT.medical })}${validMed ? DATE("medicalExpiry", {}) : ""}${IN("medicalNotes", {})}</div>`);
+    h += SEC("🛡️", "sec_ins", `<div class="grid">${IN("insuranceProvider", {})}${IN("insurancePolicyNumber", { ltr: 1 })}${DATE("insuranceExpiry", {})}</div>`);
     const kinds = docKinds();
     h += SEC("📎", "sec_docs", `<span class="hint" style="margin:0 0 10px;display:block">${t("fileHint")}</span><div class="file-grid">${kinds.map(FILE).join("")}</div>`);
   }
@@ -353,7 +365,7 @@ function drawCal() {
   POP.innerHTML = h; placePop();
   if (mode === "ym") { const s = POP.querySelector(".years .sel"); if (s) s.scrollIntoView({ block: "center" }); }
 }
-function setDate(k, iso) { if (iso) S.v[k] = iso; else delete S.v[k]; S.bad.delete(k); const txt = fmtDate(iso); setBtnLabel(`[data-date="${k}"]`, txt || t("pickDate"), !txt); const b = document.querySelector(`[data-date="${k}"]`); if (b) b.classList.remove("bad"); closePop(); refreshDyn(); }
+function setDate(k, iso) { if (iso) S.v[k] = iso; else delete S.v[k]; S.bad.delete(k); if (k === "insuranceExpiry") refreshDocs(); const txt = fmtDate(iso); setBtnLabel(`[data-date="${k}"]`, txt || t("pickDate"), !txt); const b = document.querySelector(`[data-date="${k}"]`); if (b) b.classList.remove("bad"); closePop(); refreshDyn(); }
 POP.addEventListener("click", (e) => {
   const el = e.target.closest("button"); if (!el || !P) return;
   if (P.kind === "dd" && el.dataset.pick !== undefined) return pickDD(el.dataset.pick);
@@ -380,6 +392,7 @@ fields.addEventListener("input", (ev) => {
   if (m && m !== "upper") el.value = shown(v); else if (m === "upper") el.value = v;
   else if (k !== "email" && !/^password/.test(k) && L === "fa") { const lat = toLatin(v); v = lat; const shownV = shown(lat); if (el.value !== shownV) { const pos = el.selectionStart; el.value = shownV; try { el.setSelectionRange(pos, pos); } catch (_) {} } }
   S.v[k] = v; S.bad.delete(k); el.classList.remove("bad");
+  if (/^insurance/.test(k)) refreshDocs();
   if (k === "totalJumps" && /^\d+$/.test(v)) S.v.isWingsuitPilot = Number(v) >= 200;
   refreshDyn();
 });
@@ -417,6 +430,7 @@ function validate() {
   const P_ = []; S.bad = new Set(); const need = (k) => { if (!String(val(k)).trim()) { P_.push(`${t(k)}: ${t("required")}`); S.bad.add(k); } };
   const iran = val("nationalityType") === "Iranian", c = cat();
   need(iran ? "nationalId" : "passportNumber"); if (!iran) need("nationalityCountry");
+  
   const u = username(); if (u && (iran ? !/^\d{10}$/.test(u) : (u.length < 5 || u.length > 30))) { P_.push(t("idBad")); S.bad.add(iran ? "nationalId" : "passportNumber"); }
   if ((val("password") || "").length < 6) { P_.push(t("passShort")); S.bad.add("password"); }
   if (val("password") !== val("password2")) { P_.push(t("passDiff")); S.bad.add("password2"); }
@@ -433,8 +447,9 @@ function validate() {
   { const kinds = docKinds(), total = num("totalJumps"), sky = c === "Skydiver";
     const must = ["photo", iran ? "nationalId" : "passport"];
     if (sky && String(val("licenseNumber") || "").trim()) must.push("license");
+    if (kinds.includes("medical")) must.push("medical"); if (kinds.includes("insurance")) must.push("insurance");
     if (c && c !== "Tandem Passenger" && (sky || (total !== null && total > 0))) must.push("logbook");
-    for (const k of must) if (kinds.includes(k) && !S.files[k]) P_.push(`${t("f_" + k)}: ${t("required")}`); }
+    for (const k of must) if (kinds.includes(k) && !S.files[k] && !(S.fix && S.fix.files.some((m) => m.kind === k) && !S.fix.fixes["file:" + k])) P_.push(`${t("f_" + k)}: ${t("required")}`); }
   for (const kind of Object.keys(S.files).filter((k) => docKinds().includes(k))) { const f = S.files[kind]; if (!MIMES.includes(f.type) || f.size > MAXB) P_.push(`${t("f_" + kind)}: ${t("badFile")}`); }
   return P_;
 }
@@ -466,9 +481,10 @@ $("form").addEventListener("submit", async (ev) => {
   const btn = $("send"); btn.disabled = true; btn.textContent = t("sending");
   try {
     const data = buildData(); if (!S.id) S.id = newId();
+    if (S.fix) { const up = Object.entries(S.files).filter(([k]) => docKinds().includes(k)).map(([kind, f]) => ({ kind, path: `${S.id}/r${Date.now()}-${kind}-${safeName(f.name)}`, mime: f.type, name: f.name, size: f.size })); const keep = S.fix.files.filter((m) => !up.some((u) => u.kind === m.kind)); const r = await fetch(`${cfg().url}/rest/v1/rpc/reg_resubmit`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: JSON.stringify({ p_user: S.fix.user, p_pass: S.fix.pass, p_data: data, p_files: keep.concat(up) }) }); if (!r.ok) throw new Error("resubmit"); let failed2 = 0; for (const m of up) { const rr = await fetch(`${cfg().url}/storage/v1/object/registration-docs/${m.path}`, { method: "POST", headers: hdr({ "Content-Type": m.mime, "x-upsert": "true" }), body: S.files[m.kind] }); if (!rr.ok) failed2++; } if (failed2) { setErr(t("failFiles")); btn.disabled = false; btn.textContent = t("fixSend"); return; } $("form").style.display = "none"; const d2 = $("done"); d2.style.display = "block"; d2.innerHTML = `<div style="font-size:48px">🪂</div><h2>${t("doneTitle")}</h2><p>${t("doneText")}</p>`; window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     const metas = Object.entries(S.files).filter(([k]) => docKinds().includes(k)).map(([kind, f]) => ({ kind, path: `${S.id}/${kind}-${safeName(f.name)}`, mime: f.type, name: f.name, size: f.size }));
     if (!S.saved) {
-      const r = await fetch(`${cfg().url}/rest/v1/rpc/submit_registration`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: JSON.stringify({ p_id: S.id, p_lang: L, p_data: data, p_files: metas, p_password: val("password") }) });
+      const r = await fetch(`${cfg().url}/rest/v1/rpc/submit_registration`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: JSON.stringify({ p_id: S.id, p_lang: L, p_data: data, p_files: metas, p_password: val("password"), p_dz: S.dz || null }) });
       if (!r.ok) { let m = ""; try { m = (await r.json()).message || ""; } catch (e) { /* ignore */ } if (/duplicate_username/.test(m)) { S.id = null; setErr(t("dup")); btn.disabled = false; btn.textContent = t("send"); return; } throw new Error("save " + r.status + " " + m); }
       S.saved = true;
     }
@@ -486,4 +502,36 @@ $("form").addEventListener("submit", async (ev) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (e) { console.error(e); setErr(t("fail")); btn.disabled = false; btn.textContent = t("send"); }
 });
+document.addEventListener("change", (ev) => { const el = ev.target; if (el && el.matches && el.matches("[data-dz]")) { S.dz = el.value; S.bad.delete("dz"); } });
+function fixMarks() {
+  if (!S.fix) return;
+  $("send").textContent = t("fixSend");
+  const bad = new Set(); const lab = [];
+  for (const [g, reason] of Object.entries(S.fix.fixes)) {
+    if (g === "note") continue;
+    if (g.startsWith("file:")) { const row = document.querySelector(`[data-fr="${g.slice(5)}"]`); if (row) { row.classList.add("fixme"); if (!row.querySelector(".fixwhy")) { const d = document.createElement("div"); d.className = "fixwhy"; d.textContent = reason + " — " + t("fixReup"); row.appendChild(d); } } lab.push([t("f_" + g.slice(5)), reason]); continue; }
+    (FIXMAP[g] || []).forEach((k) => bad.add(k)); lab.push([(FIXLAB[g] || [g, g])[L === "fa" ? 0 : 1], reason]);
+  }
+  bad.forEach((k) => document.querySelectorAll(`[data-k="${k}"],[data-dd="${k}"],[data-date="${k}"]`).forEach((e) => { e.classList.add("fixme"); const lb = e.closest("label.f,.f"); if (lb) lb.classList.add("fixme"); }));
+  const box = $("intro"); box.innerHTML = `<b>${t("fixIntro")}</b><ul style="margin:8px 0 0;padding-inline-start:20px">${lab.map(([a, b]) => `<li><b>${esc(a)}</b>: ${esc(b)}</li>`).join("")}</ul>${S.fix.fixes.note ? `<p><b>${t("fixNote")}:</b> ${esc(S.fix.fixes.note)}</p>` : ""}`;
+}
+{ const _r = render; render = function () { _r(); fixMarks(); }; }
+fetch(`${cfg().url}/rest/v1/rpc/reg_dropzones`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: "{}" }).then((r) => r.json()).then((l) => { if (Array.isArray(l)) { S.dzList = l; if (!FIX) render(); } }).catch(() => {});
+if (FIX) {
+  $("form").style.display = "none";
+  const box = document.createElement("div"); box.className = "note-card"; box.id = "fixbox";
+  box.innerHTML = `<h2 style="margin:0 0 8px">${t("fixTitle")}</h2><label class="f full"><span class="l">${t("fixUser")}</span><input id="fxu" class="ltr" autocapitalize="off" autocomplete="username"></label><label class="f full"><span class="l">${t("fixPass")}</span><input id="fxp" type="password" class="ltr" autocomplete="current-password"></label><div class="err" id="fxe" style="display:none"></div><button class="submit" id="fxg" type="button">${t("fixGo")}</button>`;
+  $("form").parentNode.insertBefore(box, $("form"));
+  $("fxg").addEventListener("click", async () => {
+    const u = toLatin($("fxu").value).trim(), p = $("fxp").value, e = $("fxe"); e.style.display = "none";
+    try {
+      const r = await fetch(`${cfg().url}/rest/v1/rpc/reg_fetch`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: JSON.stringify({ p_user: u, p_pass: p }) });
+      if (!r.ok) throw new Error("bad");
+      const j = await r.json();
+      Object.assign(S.v, j.data); S.v.password = p; S.v.password2 = p; S.id = j.id; S.saved = true; S.dz = j.dz || ""; S.fix = { user: u, pass: p, files: j.files || [], fixes: j.fixes || {} };
+      if (j.lang === "fa" || j.lang === "en") L = j.lang;
+      box.remove(); $("form").style.display = ""; $("send").textContent = t("fixSend"); render();
+    } catch (x) { e.textContent = t("fixBad"); e.style.display = "block"; }
+  });
+}
 render();
